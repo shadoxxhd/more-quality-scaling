@@ -1,0 +1,9 @@
+{
+    "author": "Maya_XTG",
+    "dependencies": ["base >= 2.0", "quality >= 2.0", "? space-age >= 2.0"],
+    "description": "Gives more buildings upgrades with Quality.",
+    "factorio_version": "2.0",
+    "name": "more-quality-uses",
+    "title": "More Quality Uses",
+    "version": "1.0.0"
+}
