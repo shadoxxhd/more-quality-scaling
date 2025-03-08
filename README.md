@@ -4,11 +4,21 @@ Adds configurable quality changes to Locomotives, Wagons, Storage Tanks and (pos
 
 ### Locomotive
 
-Increases maximum speed (km/h) and acceleration (kW) per tier of quality
-- Uncommon: 337 km/h, 780 kW
-- Rare: 415 km/h, 960 kW
-- Epic: 492 km/h, 1.14 MW
-- Legendary: 648 km/h, 1.5 MW
+Increases maximum speed (km/h) and acceleration (kW) with quality, without increasing the fuel consumption (by default).
+The speed bonus can be configured across various levels:
+"Vanilla-ish" (1.5% per quality level) -> 278.6 km/h at Legendary
+"Conservative" (3% per quality) -> 298 km/h at Legendary (like rocket fuel bonus)
+"Balanced" (4.5% per quality) -> 317 km/h at Legendary (like the difference between normal and legendary rocket fuel)
+"Significant" (7.5% per quality) -> 356 km/h at Legendary (like legendary rocket fuel bonus)
+"Powerful" (12%) -> 415 km/h (Legendary)
+"OP" (21%) -> 531 km/h (Legendary)
+"very OP" (30%) -> 648 km/h at Legendary (scaling like the speed of assembling machines)
+
+The acceleration always follows the default scaling (+30% per quality level)
+- Uncommon: 780 kW
+- Rare: 960 kW
+- Epic: 1.14 MW
+- Legendary: 1.5 MW
 
 ### Cargo and Fluid Wagons
 
@@ -18,9 +28,12 @@ Increases capacity of items/fluids
 - Epic: 76 stacks, 95k fluid
 - Legendary: 100 stacks, 125k fluid
 
+Additionally, maximum speed and braking force scale in the same way as the locomotives by default.
+Alternatively, wagons of all qualities support the top speed of the best quality locomotive, while optionally still scaling the capacity.
+
 ### Artillery Wagon
 
-No direct change, but internally increased max speed to match the increased Locomotive speed
+No direct change, but internally increased max speed to match the increased Locomotive speed (either statically or linked to quality)
 
 ### Storage Tank
 
@@ -33,7 +46,3 @@ Increases fluid capacity
 #### Configuration
 
 Each of these changes can be enabled (default) or disabled in the mod startup settings.
-
-#### This is overpowered!
-
-Yes, it is. That's probably why Wube didn't add it in the first place.

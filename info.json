@@ -1,9 +1,9 @@
 {
-    "author": "Maya_XTG",
-    "dependencies": ["base >= 2.0", "quality >= 2.0", "? space-age >= 2.0"],
-    "description": "Gives more buildings upgrades with Quality.",
+    "author": "sh4dow",
+    "dependencies": ["base >= 2.0", "quality >= 2.0", "? space-age >= 2.0", "(?) prismatic-quality", "(?) mythic-quality"],
+    "description": "Extends quality scaling to more entities/properties",
     "factorio_version": "2.0",
-    "name": "more-quality-uses",
-    "title": "More Quality Uses",
+    "name": "more-quality-scaling",
+    "title": "More Quality Scaling",
     "version": "1.0.0"
 }

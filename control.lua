@@ -1,16 +1,16 @@
-local function check_entity(entity_name)
-    if entity_name == "cargo-wagon" and settings.startup["mqu-cargo-wagon-changes"].value then return true end
-    if entity_name == "fluid-wagon" and settings.startup["mqu-fluid-wagon-changes"].value then return true end
-    if entity_name == "storage-tank" and settings.startup["mqu-storage-tank-changes"].value then return true end
-    if entity_name == "locomotive" and settings.startup["mqu-locomotive-changes"].value then return true end
-    if entity_name == "artillery-wagon" and settings.startup["mqu-artillery-wagon-changes"].value then return true end
-    return false
+local name_lookup = nil
+local qname = nil
+
+local function check_entity(entity_name, qname)
+    if name_lookup[entity_name] ~= nil then return name_lookup[entity_name] end
+    name_lookup[entity_name] = prototypes.entity[qname..entity_name] and true or false
+    return name_lookup[entity_name]
 end
 
 local on_built = function (data)
     local entity = data.entity
     if entity.quality.level == 0 then return end
-    if not check_entity(entity.name) then return end
+    if not check_entity(entity.name, entity.quality.name) then return end
 
     local surface = entity.surface
     local info = {
@@ -20,6 +20,8 @@ local on_built = function (data)
         force = entity.force,
         fast_replace = true,
         player = entity.last_user,
+        orientation = entity.orientation,
+        direction = entity.direction
     }
     entity.destroy()
     surface.create_entity(info)
@@ -27,3 +29,12 @@ end
 
 script.on_event(defines.events.on_built_entity, on_built)
 script.on_event(defines.events.on_robot_built_entity, on_built)
+script.on_event(defines.events.on_space_platform_built_entity, on_built)
+
+script.on_init(function()
+    storage.name_lookup = {}
+    name_lookup = storage.name_lookup
+end)
+script.on_load(function()
+    name_lookup = storage.name_lookup
+end)
