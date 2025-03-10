@@ -21,11 +21,15 @@ local on_built = function (data)
         fast_replace = true,
         player = entity.last_user,
         orientation = entity.orientation,
-        direction = entity.direction
+        direction = entity.direction,
+        raise_built = true,
+        spill=false
     }
-    entity.destroy()
+    --entity.destroy()
     surface.create_entity(info)
 end
+
+-- todo: implement logic to optionally replace all existing quality buildings that are not affected yet
 
 script.on_event(defines.events.on_built_entity, on_built)
 script.on_event(defines.events.on_robot_built_entity, on_built)

@@ -7,7 +7,9 @@
 
 local qualities = {}
 for name, qual in pairs(data.raw.quality) do
-    qualities[name] = 1 + qual.level * 0.3
+    if name ~= "quality-unknown" and name ~= "normal" then
+        qualities[name] = 1 + qual.level * 0.3
+    end
 end
 
 local speed_magnitude = settings.startup["mqs-speed-magnitude"].value + 0
@@ -17,7 +19,25 @@ local fuelUse = settings.startup["mqs-fuel-consumption"].value
 local changeAll = settings.startup["mqs-change-all"].value
 local wagonChanges = settings.startup["mqs-wagon-changes"].value
 
--- new options:
+
+-- if no placeable_by entry exists and the item has a different name, special handling might be necessary
+function makePlacable(entity, qname)
+    if entity.placeable_by then
+        if entity.placeable_by.item then
+            entity.placeable_by.quality = qname
+        else
+            for _,i in pairs(entity.placeable_by) do
+                i.quality = qname
+            end
+        end
+    else
+        if data.raw.item[entity.name] then
+            entity.placeable_by = {item=entity.name, count=1, quality=qname}
+        end
+    end
+end
+
+
 -- wagon changes
 --  compat: max speed of all wagons matches max quality locomotive
 --  simple: as above, and capacity scales with quality
@@ -46,12 +66,13 @@ if wagonChanges == "full" then
     local new = {}
     for qname, qvalue in pairs(qualities) do
         for name, original in pairs(changeAll and data.raw["cargo-wagon"] or {["cargo-wagon"]=data.raw["cargo-wagon"]["cargo-wagon"]}) do
+            original.quality_affects_inventory_size = true -- show the quality UI for the item
             local wagon = table.deepcopy(original)
-            wagon.name = qname .. "-" .. wagon.name
+            wagon.name = qname .. "-" .. name
             wagon.subgroup = "mqs-qualitised-entities-sub"
             wagon.localised_name = {"entity-name."..name}
             wagon.localised_description = {"entity-description."..name}
-            wagon.placeable_by = {item=name, count=1, quality=k}
+            makePlacable(wagon, qname)
             
             --wagon.inventory_size = wagon.inventory_size * qvalue
             wagon.quality_affects_inventory_size = true
@@ -66,15 +87,16 @@ if wagonChanges == "full" then
 --if settings.startup["mqs-fluid-wagon-changes"].value then
     for qname, qvalue in pairs(qualities) do
         for name, original in pairs(changeAll and data.raw["fluid-wagon"] or {["fluid-wagon"]=data.raw["fluid-wagon"]["fluid-wagon"]}) do
+            original.quality_affects_capacity = true
             local wagon = table.deepcopy(original)
-            wagon.name = qname .. "-" .. wagon.name
+            wagon.name = qname .. "-" .. name
             wagon.subgroup = "mqs-qualitised-entities-sub"
             wagon.localised_name = {"entity-name."..name}
             wagon.localised_description = {"entity-description."..name}
-            wagon.placeable_by = {item=name, count=1, quality=qname}
+            makePlacable(wagon, qname)
     
             --wagon.capacity = wagon.capacity * qvalue
-            quality_affects_capacity = true
+            wagon.quality_affects_capacity = true
             wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude)
             wagon.braking_force = wagon.braking_force * qvalue
     
@@ -86,12 +108,13 @@ if wagonChanges == "full" then
 --if settings.startup["mqs-artillery-wagon-changes"].value then
     for qname, qvalue in pairs(qualities) do
         for name, original in pairs(changeAll and data.raw["artillery-wagon"] or {["artillery-wagon"]=data.raw["artillery-wagon"]["artillery-wagon"]}) do
+            original.quality_affects_inventory_size = true
             local wagon = table.deepcopy(original)
-            wagon.name = qname .. "-" .. wagon.name
+            wagon.name = qname .. "-" .. name
             wagon.subgroup = "mqs-qualitised-entities-sub"
             wagon.localised_name = {"entity-name."..name}
             wagon.localised_description = {"entity-description."..name}
-            wagon.placeable_by = {item=name, count=1, quality=qname}
+            makePlacable(wagon, qname)
     
             wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude)
             wagon.braking_force = wagon.braking_force * qvalue
@@ -130,11 +153,11 @@ if settings.startup["mqs-storage-tank-changes"].value then
     for qname, qvalue in pairs(qualities) do
         for name, original in pairs(changeAll and data.raw["storage-tank"] or {["storage-tank"]=data.raw["storage-tank"]["storage-tank"]}) do
             local tank = table.deepcopy(original)
-            tank.name = qname .. "-" .. tank.name
+            tank.name = qname .. "-" .. name
             tank.subgroup = "mqs-qualitised-entities-sub"
             tank.localised_name = {"entity-name."..name}
             tank.localised_description = {"entity-description."..name}
-            tank.placeable_by = {item=name, count=1, quality=qname}
+            makePlacable(tank, qname)
 
             tank.fluid_box.volume = tank.fluid_box.volume * qvalue
 
@@ -149,11 +172,11 @@ if settings.startup["mqs-locomotive-changes"].value then
     for qname, qvalue in pairs(qualities) do
         for name, original in pairs(changeAll and data.raw["locomotive"] or {["cargo-wagon"]=data.raw["cargo-wagon"]["cargo-wagon"]}) do
             local train = table.deepcopy(original)
-            train.name = qname .. "-" .. train.name
+            train.name = qname .. "-" .. name
             train.subgroup = "mqs-qualitised-entities-sub"
             train.localised_name = {"entity-name."..name}
             train.localised_description = {"entity-description."..name}
-            train.placeable_by = {item=name, count=1, quality=qname}
+            makePlacable(train, qname)
     
             train.max_speed = train.max_speed * (1 + (qvalue-1) * speed_magnitude)
             train.max_power = tostring(600 * qvalue) .. "kW"
@@ -172,4 +195,45 @@ if settings.startup["mqs-locomotive-changes"].value then
         end
     end
     data:extend(new)
+end
+
+if settings.startup["mqs-rocket-changes"].value then
+    -- todo: maybe add option for scaling intensity?
+    local new = {}
+    for qname, qvalue in pairs(qualities) do
+        for name, original in pairs(changeAll and data.raw["rocket-silo"] or {["rocket-silo"] = data.raw["rocket-silo"]["rocket-silo"]}) do
+            local silo = table.deepcopy(original)
+            silo.name = qname.."-"..name
+            silo.subgroup = "mqs-qualitised-entities-sub"
+            silo.localised_name = {"entity-name."..name}
+            silo.localised_description = {"entity-description."..name}
+            makePlacable(silo, qname)
+
+            silo.door_opening_speed = silo.door_opening_speed * qvalue
+
+            local rocket = table.deepcopy(data.raw["rocket-silo-rocket"][silo.rocket_entity])
+            rocket.name = qname.."-"..rocket.name
+            silo.rocket_entity = rocket.name
+
+            rocket.rising_speed = rocket.rising_speed * qvalue
+            rocket.engine_starting_speed = rocket.engine_starting_speed * qvalue
+            rocket.flying_speed = rocket.flying_speed * qvalue
+            rocket.flying_acceleration = rocket.flying_acceleration * qvalue
+
+            table.insert(new, silo)
+            table.insert(new, rocket)
+        end
+    end
+    data:extend(new)
+end
+
+if settings.startup["mqs-roboport-changes"].value then
+    -- todo: add option for range scaling
+    for _, roboport in pairs(data.raw["roboport"]) do
+      roboport.charging_station_count_affected_by_quality = true
+    end
+    
+    for _, equip in pairs(data.raw["roboport-equipment"]) do
+      equip.charging_station_count_affected_by_quality = true
+    end
 end

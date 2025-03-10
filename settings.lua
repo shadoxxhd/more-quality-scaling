@@ -44,7 +44,7 @@ data:extend({
 		name = "mqs-speed-magnitude",
 		setting_type = "startup",
 		default_value = "0.25",
-		allowed_values = {"0", "0.05", "0.15", "0.25", "0.4", "0.7", "1.0"},
+		allowed_values = {"0", "0.05", "0.1", "0.15", "0.25", "0.4", "0.7", "1.0"},
 		order = "d"
 	},
 	{
@@ -57,9 +57,23 @@ data:extend({
 	},
 	{
 		type = "bool-setting",
-		name = "mqs-change-all",
+		name = "mqs-rocket-changes",
 		setting_type = "startup",
 		default_value = true,
 		order = "f"
+	},
+	{
+		type = "bool-setting",
+		name = "mqs-roboport-changes",
+		setting_type = "startup",
+		default_value = true,
+		order = "g"
+	},
+	{
+		type = "bool-setting",
+		name = "mqs-change-all",
+		setting_type = "startup",
+		default_value = true,
+		order = "z"
 	}
 })
