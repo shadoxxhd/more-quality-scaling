@@ -1,6 +1,6 @@
-# More Quality Uses
+# More Quality Scaling
 
-Adds configurable quality changes to Locomotives, Wagons, Storage Tanks and (possibly) more!
+Adds configurable quality scaling to Locomotives, Wagons, Storage Tanks, Rocket Silos and Roboports
 
 ### Locomotive
 
@@ -43,6 +43,18 @@ Increases fluid capacity
 - Epic: 47.5k
 - Legendary: 62.5k
 
+### Rocket Silos
+
+Silo door opening speed, rocket rising speed and launch speed are affected by quality (+30% per level; effect identical to QualityRockets, but can apply to modded rocket silos).
+
+### Roboports
+
+Makes quality affect charging station count.
+
 #### Configuration
 
 Each of these changes can be enabled (default) or disabled in the mod startup settings.
+
+
+### Credits
+Based on the mod "More Quality Uses" by Maya_XTG, and incorporating the changes from "QualityRockets" by Moterius

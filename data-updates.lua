@@ -170,7 +170,7 @@ end
 if settings.startup["mqs-locomotive-changes"].value then
     local new = {}
     for qname, qvalue in pairs(qualities) do
-        for name, original in pairs(changeAll and data.raw["locomotive"] or {["cargo-wagon"]=data.raw["cargo-wagon"]["cargo-wagon"]}) do
+        for name, original in pairs(changeAll and data.raw["locomotive"] or {["locomotive"]=data.raw["locomotive"]["locomotive"]}) do
             local train = table.deepcopy(original)
             train.name = qname .. "-" .. name
             train.subgroup = "mqs-qualitised-entities-sub"
@@ -229,11 +229,13 @@ end
 
 if settings.startup["mqs-roboport-changes"].value then
     -- todo: add option for range scaling
-    for _, roboport in pairs(data.raw["roboport"]) do
+    for _, roboport in pairs(changeAll and data.raw["roboport"] or {["roboport"] = data.raw["roboport"]["roboport"]}) do
       roboport.charging_station_count_affected_by_quality = true
     end
     
-    for _, equip in pairs(data.raw["roboport-equipment"]) do
+    for _, equip in pairs(changeAll and data.raw["roboport-equipment"]
+        or {["personal-roboport-equipment"]=data.raw["roboport-equipment"]["personal-roboport-equipment"],
+        ["personal-roboport-mk2-equipment"]=data.raw["roboport-equipment"]["personal-roboport-mk2-equipment"]}) do
       equip.charging_station_count_affected_by_quality = true
     end
 end
