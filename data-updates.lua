@@ -187,6 +187,8 @@ if settings.startup["mqs-locomotive-changes"].value then
                     train.energy_source.effectivity = (train.energy_source.effectivity or 1) * qvalue / (1 + (qvalue-1) * speed_magnitude)
                 elseif fuelUse == "inverse" then
                     train.energy_source.effectivity = (train.energy_source.effectivity or 1) * qvalue * qvalue
+                elseif fuelUse == "qspeed" then
+                    train.energy_source.effectivity = (train.energy_source.effectivity or 1) * qvalue / (1 + (qvalue-1) * speed_magnitude)^2
                 end
             end
             train.braking_force = train.braking_force * qvalue

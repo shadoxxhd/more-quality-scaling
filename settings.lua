@@ -36,7 +36,7 @@ data:extend({
 		name = "mqs-fuel-consumption",
 		setting_type = "startup",
 		default_value = "constant",
-		allowed_values = {"inverse", "constant", "speed", "linear"},
+		allowed_values = {"inverse", "constant", "speed", "linear", "qspeed"},
 		order = "c"
 	},
 	{
