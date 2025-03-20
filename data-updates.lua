@@ -240,6 +240,10 @@ if settings.startup["mqs-rocket-changes"].value then
             makePlacable(silo, qname, name)
 
             silo.door_opening_speed = silo.door_opening_speed * qvalue
+            silo.light_blinking_speed = silo.light_blinking_speed * qvalue
+
+            silo.rocket_rising_delay = math.ceil((silo.rocket_rising_delay or 30) / qvalue)
+            silo.launch_wait_time = math.ceil((silo.launch_wait_time or 120) / qvalue)
 
             local rocket = table.deepcopy(data.raw["rocket-silo-rocket"][silo.rocket_entity])
             rocket.name = qname.."-"..rocket.name
