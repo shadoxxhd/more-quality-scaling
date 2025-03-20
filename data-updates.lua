@@ -19,9 +19,11 @@ local fuelUse = settings.startup["mqs-fuel-consumption"].value
 local changeAll = settings.startup["mqs-change-all"].value
 local wagonChanges = settings.startup["mqs-wagon-changes"].value
 
+local itemLookup = {}
+
 
 -- if no placeable_by entry exists and the item has a different name, special handling might be necessary
-function makePlacable(entity, qname)
+function makePlacable(entity, qname, basename)
     if entity.placeable_by then
         if entity.placeable_by.item then
             entity.placeable_by.quality = qname
@@ -30,11 +32,44 @@ function makePlacable(entity, qname)
                 i.quality = qname
             end
         end
+    elseif entity.minable and entity.minable.result then
+        entity.placeable_by = {item=entity.minable.result, count=1, quality=qname}
+    elseif entity.minable and entity.minable.results then
+        entity.placeable_by = {}
+        for k,v in pairs(entity.minable.results) do
+            if v.type == "item" then
+                table.insert(entity.placeable_by, {item=v.name, count=v.amount or v.amount_max, quality=qname})
+            end
+        end
+    elseif data.raw.item[basename] or data.raw["item-with-entity-data"][basename] then
+        entity.placeable_by = {item=basename, count=1, quality=qname}
     else
-        if data.raw.item[entity.name] then
-            entity.placeable_by = {item=entity.name, count=1, quality=qname}
+        -- last resort - scan all items for one that places the entity
+        if itemLookup[basename] == nil then
+            for k,v in pairs(data.raw["item-with-entity-data"]) do
+                if v.place_result == basename then
+                    itemLookup[basename] = k
+                    break
+                end
+            end
+        end
+        if itemLookup[basename] == nil then
+            for k,v in pairs(data.raw.item) do
+                if v.place_result == basename then
+                    itemLookup[basename] = k
+                    break
+                end
+            end
+        end
+        if itemLookup[basename] == nil then
+            log("MQS: no item found for "..basename)
+            itemLookup[basename] = false -- if nothing was found, mark it, so successive qualities dont need to search again
+        end
+        if itemLookup[basename] then
+            entity.placeable_by = {item=itemLookup[basename], count=1, quality=qname}
         end
     end
+    --log("MQS: "..entity.name..": "..serpent.line(entity.placeable_by))
 end
 
 
@@ -62,7 +97,6 @@ data:extend{
 }
 
 if wagonChanges == "full" then
---if settings.startup["mqs-cargo-wagon-changes"].value then
     local new = {}
     for qname, qvalue in pairs(qualities) do
         for name, original in pairs(changeAll and data.raw["cargo-wagon"] or {["cargo-wagon"]=data.raw["cargo-wagon"]["cargo-wagon"]}) do
@@ -72,7 +106,7 @@ if wagonChanges == "full" then
             wagon.subgroup = "mqs-qualitised-entities-sub"
             wagon.localised_name = {"entity-name."..name}
             wagon.localised_description = {"entity-description."..name}
-            makePlacable(wagon, qname)
+            makePlacable(wagon, qname, name)
             
             --wagon.inventory_size = wagon.inventory_size * qvalue
             wagon.quality_affects_inventory_size = true
@@ -82,9 +116,6 @@ if wagonChanges == "full" then
             table.insert(new, wagon)
         end
     end
---end
-
---if settings.startup["mqs-fluid-wagon-changes"].value then
     for qname, qvalue in pairs(qualities) do
         for name, original in pairs(changeAll and data.raw["fluid-wagon"] or {["fluid-wagon"]=data.raw["fluid-wagon"]["fluid-wagon"]}) do
             original.quality_affects_capacity = true
@@ -93,7 +124,7 @@ if wagonChanges == "full" then
             wagon.subgroup = "mqs-qualitised-entities-sub"
             wagon.localised_name = {"entity-name."..name}
             wagon.localised_description = {"entity-description."..name}
-            makePlacable(wagon, qname)
+            makePlacable(wagon, qname, name)
     
             --wagon.capacity = wagon.capacity * qvalue
             wagon.quality_affects_capacity = true
@@ -103,9 +134,6 @@ if wagonChanges == "full" then
             table.insert(new, wagon)
         end
     end
---end
-
---if settings.startup["mqs-artillery-wagon-changes"].value then
     for qname, qvalue in pairs(qualities) do
         for name, original in pairs(changeAll and data.raw["artillery-wagon"] or {["artillery-wagon"]=data.raw["artillery-wagon"]["artillery-wagon"]}) do
             original.quality_affects_inventory_size = true
@@ -114,7 +142,7 @@ if wagonChanges == "full" then
             wagon.subgroup = "mqs-qualitised-entities-sub"
             wagon.localised_name = {"entity-name."..name}
             wagon.localised_description = {"entity-description."..name}
-            makePlacable(wagon, qname)
+            makePlacable(wagon, qname, name)
     
             wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude)
             wagon.braking_force = wagon.braking_force * qvalue
@@ -123,7 +151,7 @@ if wagonChanges == "full" then
         end
     end
     data:extend(new)
-else--if wagonChanges == 1 then
+else
     local maxQ = 0
     for qname, qvalue in pairs(qualities) do
         if qvalue > maxQ then maxQ = qvalue end
@@ -157,7 +185,7 @@ if settings.startup["mqs-storage-tank-changes"].value then
             tank.subgroup = "mqs-qualitised-entities-sub"
             tank.localised_name = {"entity-name."..name}
             tank.localised_description = {"entity-description."..name}
-            makePlacable(tank, qname)
+            makePlacable(tank, qname, name)
 
             tank.fluid_box.volume = tank.fluid_box.volume * qvalue
 
@@ -176,7 +204,7 @@ if settings.startup["mqs-locomotive-changes"].value then
             train.subgroup = "mqs-qualitised-entities-sub"
             train.localised_name = {"entity-name."..name}
             train.localised_description = {"entity-description."..name}
-            makePlacable(train, qname)
+            makePlacable(train, qname, name)
     
             train.max_speed = train.max_speed * (1 + (qvalue-1) * speed_magnitude)
             train.max_power = tostring(600 * qvalue) .. "kW"
@@ -209,7 +237,7 @@ if settings.startup["mqs-rocket-changes"].value then
             silo.subgroup = "mqs-qualitised-entities-sub"
             silo.localised_name = {"entity-name."..name}
             silo.localised_description = {"entity-description."..name}
-            makePlacable(silo, qname)
+            makePlacable(silo, qname, name)
 
             silo.door_opening_speed = silo.door_opening_speed * qvalue
 
