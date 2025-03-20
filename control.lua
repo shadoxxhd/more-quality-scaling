@@ -3,7 +3,7 @@ local qname = nil
 
 local function check_entity(entity_name, qname)
     if name_lookup[entity_name] ~= nil then return name_lookup[entity_name] end
-    name_lookup[entity_name] = prototypes.entity[qname..entity_name] and true or false
+    name_lookup[entity_name] = prototypes.entity[qname.."-"..entity_name] and true or false
     return name_lookup[entity_name]
 end
 
