@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.1.0
+Date: 2025-03-20
+  Features:
+    - Rocket silo quality now affects all parts of the launch sequence (incl. door blinking time and launch delay)
+  Bugfixes:
+    - Pipette (Q) should now work reliably with scaled entities
+    - Fixed locomotives and wagons not being replaced with their scaled versions
+---------------------------------------------------------------------------------------------------
 Version: 1.0.3
 Date: 2025-03-16
   Bugfixes:
