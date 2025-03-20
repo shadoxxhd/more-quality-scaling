@@ -34,11 +34,17 @@ end
 script.on_event(defines.events.on_built_entity, on_built)
 script.on_event(defines.events.on_robot_built_entity, on_built)
 script.on_event(defines.events.on_space_platform_built_entity, on_built)
+script.on_event(defines.events.script_raised_built, on_built)
 
 script.on_init(function()
     storage.name_lookup = {}
     name_lookup = storage.name_lookup
 end)
 script.on_load(function()
+    name_lookup = storage.name_lookup
+end)
+
+script.on_configuration_changed(function()
+    storage.name_lookup = {}
     name_lookup = storage.name_lookup
 end)
