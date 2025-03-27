@@ -224,9 +224,12 @@ local on_built = function (data)
             ne.train.schedule = sched
             ne.train.manual_mode = manual or false
         end
+    elseif entity.type == "construction-robot" or entity.type == "logistic-robot" then
+      entity.destroy()
+      surface.create_entity(info)
     else
-        --entity.destroy()
-        surface.create_entity(info)
+      --entity.destroy()
+      surface.create_entity(info)
     end
 end
 
