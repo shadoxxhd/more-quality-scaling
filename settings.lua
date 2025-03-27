@@ -97,8 +97,7 @@ data:extend({
 		name = "mqs-underground-changes",
 		setting_type = "startup",
 		default_value = false,
-		order = "w",
-		hidden = true
+		order = "w"
 	},
 	{
 		type = "bool-setting",

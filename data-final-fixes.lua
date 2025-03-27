@@ -356,8 +356,11 @@ end
 
 if settings.startup["mqs-mining-drill-changes"].value ~= "none" then
     local new = {}
-    for qname, qvalue in pairs(qualities) do
-        for name, original in pairs(data.raw["mining-drill"]) do
+    for name, original in pairs(data.raw["mining-drill"]) do
+        --if not original.fast_replaceable_group then
+        --    original.fast_replaceable_group = "mqs-"..original.name
+        --end
+        for qname, qvalue in pairs(qualities) do
             local entity = table.deepcopy(original)
             defaultChanges(entity, qname)
 
@@ -453,3 +456,10 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
 
     data:extend(new)
 end
+
+
+-- general TODO
+-- - quality belt drag-placing
+-- - underground indicators
+-- - correct underground connections (copy&paste works correctly, manual placement sometimes doesn't)
+-- - mining drill area preview
