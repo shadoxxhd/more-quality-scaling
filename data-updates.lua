@@ -73,6 +73,15 @@ function makePlacable(entity, qname, basename)
 end
 
 
+function defaultChanges(entity, qname)
+    local name = entity.name
+    entity.name = qname .. "-" .. name
+    entity.subgroup = "mqs-qualitised-entities-sub"
+    entity.localised_name = {"entity-name."..name}
+    entity.localised_description = {"entity-description."..name}
+    makePlacable(entity, qname, name)
+end
+
 -- wagon changes
 --  compat: max speed of all wagons matches max quality locomotive
 --  simple: as above, and capacity scales with quality
@@ -272,4 +281,88 @@ if settings.startup["mqs-roboport-changes"].value then
         ["personal-roboport-mk2-equipment"]=data.raw["roboport-equipment"]["personal-roboport-mk2-equipment"]}) do
       equip.charging_station_count_affected_by_quality = true
     end
+end
+
+if settings.startup["mqs-belt-changes"].value then
+    -- todo: loader, loader1x1
+    local new = {}
+    for qname, qvalue in pairs(qualities) do
+        for name, original in pairs(data.raw["transport-belt"]) do -- todo: add "vanilla only" option
+            local belt = table.deepcopy(original)
+
+            defaultChanges(entity, qname)
+
+            belt.speed = belt.speed * qvalue
+
+            table.insert(new, belt)
+        end
+    end
+    for qname, qvalue in pairs(qualities) do
+        for name, original in pairs(data.raw["splitter"]) do
+            local splitter = table.deepcopy(original)
+
+            defaultChanges(entity, qname)
+
+            splitter.speed = splitter.speed * qvalue
+
+
+            table.insert(new, splitter)
+        end
+    end
+    for qname, qvalue in pairs(qualities) do
+        for name, original in pairs(data.raw["lane-splitter"]) do
+            local lsplitter = table.deepcopy(original)
+
+            defaultChanges(entity, qname)
+
+            lsplitter.speed = lsplitter.speed * qvalue
+
+
+            table.insert(new, lsplitter)
+        end
+    end
+    data:extend(new)
+end
+
+if settings.startup["mqs-belt-changes"].value or settings.startup["mqs-underground-changes"].value then
+    local new = {}
+    for qname, qvalue in pairs(qualities) do
+        for name, original in pairs(data.raw["underground-belt"]) do
+            local ubelt = table.deepcopy(original)
+
+            defaultChanges(entity, qname)
+
+            if settings.startup["mqs-belt-changes"].value then
+                ubelt.speed = ubelt.speed * qvalue
+            end
+            if settings.startup["mqs-underground-changes"].value then
+                ubelt.max_distance = ubelt.max_distance + data.raw.quality[qname].level
+            end
+
+            table.insert(new, ubelt)
+        end
+    end
+    data:extend(new)
+end
+
+if settings.startup["mqs-mining-drill-changes"].value ~= "none" then
+    local new = {}
+    for qname, qvalue in pairs(qualities) do
+        for name, original in pairs(data.raw["mining-drill"]) do
+            local entity = table.deepcopy(original)
+            defaultChanges(entity, qname)
+
+            if settings.startup["mqs-mining-drill-changes"].value == "speed" or settings.startup["mqs-mining-drill-changes"].value == "both" then
+                entity.mining_speed = entity.mining_speed * qvalue
+            end
+            if settings.startup["mqs-mining-drill-changes"].value == "area" or settings.startup["mqs-mining-drill-changes"].value == "both" then
+                entity.resource_searching_range = entity.resource_searching_range + math.floor((entity.resource_searching_range+1)*data.raw.quality[qname].value*0.15)
+                -- this formula results in a nice progression for base game drills: 5/5/7/7/9(/15) for mining drills, 13/15/17/19/23(/35) for big drills
+                -- "ancient drill" mod gets 25/29/33/37/45(/65)
+            end
+
+            table.insert(new, entity)
+        end
+    end
+    data:extend(new)
 end

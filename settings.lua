@@ -70,6 +70,30 @@ data:extend({
 		order = "g"
 	},
 	{
+		type = "string-setting",
+		name = "mqs-mining-drill-changes",
+		setting_type = "startup",
+		default_value = "speed",
+		allowed_values = {"none", "speed", "range", "both"},
+		order = "i"
+	},
+	{
+		type = "bool-setting",
+		name = "mqs-belt-changes",
+		setting_type = "startup",
+		default_value = false,
+		order = "v",
+		hidden = true
+	},
+	{
+		type = "bool-setting",
+		name = "mqs-underground-changes",
+		setting_type = "startup",
+		default_value = false,
+		order = "w",
+		hidden = true
+	},
+	{
 		type = "bool-setting",
 		name = "mqs-change-all",
 		setting_type = "startup",
