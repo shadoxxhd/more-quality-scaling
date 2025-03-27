@@ -365,7 +365,7 @@ if settings.startup["mqs-mining-drill-changes"].value ~= "none" then
                 entity.mining_speed = entity.mining_speed * qvalue
             end
             if settings.startup["mqs-mining-drill-changes"].value == "area" or settings.startup["mqs-mining-drill-changes"].value == "both" then
-                entity.resource_searching_range = entity.resource_searching_range + math.floor((entity.resource_searching_range+1)*data.raw.quality[qname].value*0.15)
+                entity.resource_searching_radius = entity.resource_searching_radius + math.floor((entity.resource_searching_radius+1)*data.raw.quality[qname].level*0.15)
                 -- this formula results in a nice progression for base game drills: 5/5/7/7/9(/15) for mining drills, 13/15/17/19/23(/35) for big drills
                 -- "ancient drill" mod gets 25/29/33/37/45(/65)
             end
@@ -399,7 +399,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
                 entity.speed = entity.speed * qvalue
             end
             if settings.startup["mqs-robot-changes"].value == "capacity" or settings.startup["mqs-robot-changes"].value == "both" then
-                entity.max_payload_size = entity.max_payload_size + math.floor(data.raw.quality[qname].value)
+                entity.max_payload_size = entity.max_payload_size + math.floor(data.raw.quality[qname].level)
             end
 
             table.insert(new, entity)
@@ -433,7 +433,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
                 entity.speed = entity.speed * qvalue
             end
             if settings.startup["mqs-robot-changes"].value == "capacity" or settings.startup["mqs-robot-changes"].value == "both" then
-                entity.max_payload_size = entity.max_payload_size + math.floor(data.raw.quality[qname].value)
+                entity.max_payload_size = entity.max_payload_size + math.floor(data.raw.quality[qname].level)
             end
 
             table.insert(new, entity)
