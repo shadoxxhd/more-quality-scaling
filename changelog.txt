@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.2.0
+Date: 2025-03-27
+  Features:
+    - Optional mining drill scaling (speed and/or area)
+    - Optional belt speed and underground length scaling
+    - Optional WIP construction/logistic robot scaling (speed and/or cargo capacity)
+  Bugfixes:
+    - Fixed crash related to icon size that was occuring on some systems
+---------------------------------------------------------------------------------------------------
 Version: 1.1.0
 Date: 2025-03-20
   Features:
