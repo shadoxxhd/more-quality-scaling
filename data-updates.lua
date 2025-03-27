@@ -84,7 +84,7 @@ data:extend{
         name = "mqs-qualitised-entities",
         order = "zzz",
         icon = "__core__/graphics/icons/any-quality.png",
-        icon_size = 128,
+        icon_size = 64,
         hidden = true
     },
     {
