@@ -366,3 +366,81 @@ if settings.startup["mqs-mining-drill-changes"].value ~= "none" then
     end
     data:extend(new)
 end
+
+-- SECTION robot changes
+if settings.startup["mqs-robot-changes"].value ~= "none" then
+    local new = {}
+    for qname, qvalue in pairs(qualities) do
+        for name, original in pairs(data.raw["logistic-robot"]) do
+            local entity = table.deepcopy(original)
+            
+            entity.name = qname.."-"..name
+            entity.subgroup = "mqs-qualitised-entities-sub"
+            entity.localised_name = {"entity-name."..name}
+            entity.localised_description = {"entity-description."..name}
+            -- skip makePlacable
+            -- drop specific item
+            local iname = nil
+            if entity.minable and entity.minable.result then
+                iname = entity.minable.result
+                entity.minable.result = qname.."-"..iname
+            end -- ignore the case of multiple mining results
+
+            if settings.startup["mqs-robot-changes"].value == "speed" or settings.startup["mqs-robot-changes"].value == "both" then
+                entity.speed = entity.speed * qvalue
+            end
+            if settings.startup["mqs-robot-changes"].value == "capacity" or settings.startup["mqs-robot-changes"].value == "both" then
+                entity.max_payload_size = entity.max_payload_size + math.floor(data.raw.quality[qname].value)
+            end
+
+            table.insert(new, entity)
+
+            if iname then
+                local item = table.deepcopy(data.raw.item[iname])
+                item.name = qname.."-"..name
+                item.place_result = entity.name
+                item.subgroup = "mqs-qualitised-entities-sub"
+                table.insert(new, item)
+            end
+        end
+    end
+    for qname, qvalue in pairs(qualities) do
+        for name, original in pairs(data.raw["construction-robot"]) do
+            local entity = table.deepcopy(original)
+            
+            entity.name = qname.."-"..name
+            entity.subgroup = "mqs-qualitised-entities-sub"
+            entity.localised_name = {"entity-name."..name}
+            entity.localised_description = {"entity-description."..name}
+            -- skip makePlacable
+            -- drop specific item
+            local iname = nil
+            if entity.minable and entity.minable.result then
+                iname = entity.minable.result
+                entity.minable.result = qname.."-"..iname
+            end -- ignore the case of multiple mining results
+
+            if settings.startup["mqs-robot-changes"].value == "speed" or settings.startup["mqs-robot-changes"].value == "both" then
+                entity.speed = entity.speed * qvalue
+            end
+            if settings.startup["mqs-robot-changes"].value == "capacity" or settings.startup["mqs-robot-changes"].value == "both" then
+                entity.max_payload_size = entity.max_payload_size + math.floor(data.raw.quality[qname].value)
+            end
+
+            table.insert(new, entity)
+
+            if iname then
+                local item = table.deepcopy(data.raw.item[iname])
+                item.name = qname.."-"..name
+                item.place_result = entity.name
+                item.subgroup = "mqs-qualitised-entities-sub"
+                table.insert(new, item)
+            end
+        end
+    end
+
+    -- TODO: add items, add recipes to convert specific qualities of normal robots into the quality-specific deployer items,
+    --          add machine for these recipes? ("calibrator" - alternatively, "calibrate" the bots in an assembler)
+
+    data:extend(new)
+end

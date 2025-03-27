@@ -71,6 +71,14 @@ data:extend({
 	},
 	{
 		type = "string-setting",
+		name = "mqs-robot-changes",
+		setting_type = "startup",
+		default_value = "speed",
+		allowed_values = {"none", "speed", "capacity", "both"},
+		order = "h"
+	},
+	{
+		type = "string-setting",
 		name = "mqs-mining-drill-changes",
 		setting_type = "startup",
 		default_value = "speed",
