@@ -286,41 +286,50 @@ end
 if settings.startup["mqs-belt-changes"].value then
     -- todo: loader, loader1x1
     local new = {}
-    for qname, qvalue in pairs(qualities) do
-        for name, original in pairs(data.raw["transport-belt"]) do -- todo: add "vanilla only" option
-            local belt = table.deepcopy(original)
-
-            defaultChanges(entity, qname)
-
-            belt.speed = belt.speed * qvalue
-
-            table.insert(new, belt)
+    local categories = {"transport-belt", "splitter", "lane-splitter", "loader", "loader-1x1"}
+    for _, cat in pairs(categories) do
+        for qname, qvalue in pairs(qualities) do
+            for name, original in pairs(data.raw[cat]) do -- todo: add "vanilla only" option
+                local entity = table.deepcopy(original)
+                defaultChanges(entity, qname)
+    
+                entity.speed = entity.speed * qvalue
+    
+                table.insert(new, entity)
+            end
         end
     end
-    for qname, qvalue in pairs(qualities) do
-        for name, original in pairs(data.raw["splitter"]) do
-            local splitter = table.deepcopy(original)
-
-            defaultChanges(entity, qname)
-
-            splitter.speed = splitter.speed * qvalue
-
-
-            table.insert(new, splitter)
-        end
-    end
-    for qname, qvalue in pairs(qualities) do
-        for name, original in pairs(data.raw["lane-splitter"]) do
-            local lsplitter = table.deepcopy(original)
-
-            defaultChanges(entity, qname)
-
-            lsplitter.speed = lsplitter.speed * qvalue
-
-
-            table.insert(new, lsplitter)
-        end
-    end
+--    for qname, qvalue in pairs(qualities) do
+--        for name, original in pairs(data.raw["splitter"]) do
+--            local splitter = table.deepcopy(original)
+--            defaultChanges(splitter, qname)
+--
+--            splitter.speed = splitter.speed * qvalue
+--
+--            table.insert(new, splitter)
+--        end
+--    end
+--    for qname, qvalue in pairs(qualities) do
+--        for name, original in pairs(data.raw["lane-splitter"]) do
+--            local lsplitter = table.deepcopy(original)
+--            defaultChanges(lsplitter, qname)
+--
+--            lsplitter.speed = lsplitter.speed * qvalue
+--
+--            table.insert(new, lsplitter)
+--        end
+--    end
+--    for qname, qvalue in pairs(qualities) do
+--        for name, original in pairs(data.raw["loader"]) do
+--            local lsplitter = table.deepcopy(original)
+--            defaultChanges(lsplitter, qname)
+--
+--            lsplitter.speed = lsplitter.speed * qvalue
+--
+--            table.insert(new, lsplitter)
+--        end
+--    end
+--     ...loader-1x1
     data:extend(new)
 end
 
@@ -330,7 +339,7 @@ if settings.startup["mqs-belt-changes"].value or settings.startup["mqs-undergrou
         for name, original in pairs(data.raw["underground-belt"]) do
             local ubelt = table.deepcopy(original)
 
-            defaultChanges(entity, qname)
+            defaultChanges(ubelt, qname)
 
             if settings.startup["mqs-belt-changes"].value then
                 ubelt.speed = ubelt.speed * qvalue
