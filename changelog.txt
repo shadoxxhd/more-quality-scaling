@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.2.2
+Date: 2025-03-27
+  Features:
+    - Actually enabled the underground length scaling setting now. Manual drag placement of belts/undergrounds does currently have some annoyances!
+---------------------------------------------------------------------------------------------------
 Version: 1.2.1
 Date: 2025-03-27
   Bugfixes:
