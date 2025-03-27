@@ -90,8 +90,7 @@ data:extend({
 		name = "mqs-belt-changes",
 		setting_type = "startup",
 		default_value = false,
-		order = "v",
-		hidden = true
+		order = "v"
 	},
 	{
 		type = "bool-setting",
