@@ -188,18 +188,17 @@ end
 if settings.startup["mqs-storage-tank-changes"].value then
     local new = {}
     for qname, qvalue in pairs(qualities) do
-        for name, original in pairs(changeAll and data.raw["storage-tank"] or {["storage-tank"]=data.raw["storage-tank"]["storage-tank"]}) do
+        for name, original in pairs(changeAll and data.raw["storage-tank"] or {["storage-tank"]=data.raw["storage-tank"]["storage-tank"]}) do repeat -- necessary for "break" to work as "continue"
+            if name:match("^factory%-connection%-indicator%-") or name:match("^factory%-[1-3]$") then
+                break
+            end
             local tank = table.deepcopy(original)
-            tank.name = qname .. "-" .. name
-            tank.subgroup = "mqs-qualitised-entities-sub"
-            tank.localised_name = {"entity-name."..name}
-            tank.localised_description = {"entity-description."..name}
-            makePlacable(tank, qname, name)
-
+            defaultChanges(tank, qname)
+    
             tank.fluid_box.volume = tank.fluid_box.volume * qvalue
-
+    
             table.insert(new, tank)
-        end
+        until true; end
     end
     data:extend(new)
 end
