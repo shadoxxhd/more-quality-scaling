@@ -1,9 +1,9 @@
 {
     "author": "sh4dow",
-    "dependencies": ["base >= 2.0", "quality >= 2.0", "? space-age >= 2.0", "(?) prismatic-quality", "(?) mythic-quality", "(?) entangled-belts"],
+    "dependencies": ["base >= 2.0", "quality >= 2.0", "? space-age >= 2.0", "(?) prismatic-quality", "(?) mythic-quality", "(?) entangled-belts", "(?) custom"],
     "description": "Extends quality scaling to more entities/properties",
     "factorio_version": "2.0",
     "name": "more-quality-scaling",
     "title": "More Quality Scaling",
-    "version": "1.2.2"
+    "version": "1.2.3"
 }

@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.2.3
+Date: 2025-04-08
+  Features:
+    - Added replacement delay for belts and undergrounds, allowing the belt dragging functionality to work as expected.
+  Bugfixes:
+    - Blacklisted Factorissimo 3 internal storage tanks (should fix broken functionality)
+    - Fixed underground and loader orientation issues
+---------------------------------------------------------------------------------------------------
 Version: 1.2.2
 Date: 2025-03-27
   Features:
