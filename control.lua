@@ -1,6 +1,19 @@
 local name_lookup = nil
 local qname = nil
 
+-- 1s delay seems to work well
+local delayedPlacement = {
+  ["transport-belt"] = 60,
+  ["underground-belt"] = 60
+}
+
+local TRAINS = {
+  ["locomotive"] = true,
+  ["cargo-wagon"] = true,
+  ["fluid-wagon"] = true,
+  ["artillery-wagon"] = true
+}
+
 -- SECTION code taken from train-upgrader mod
 local carriage_inventories = {
   defines.inventory.fuel,
@@ -168,39 +181,83 @@ end
 
 -- END SECTION
 
+local function on_tick()
+  --if not storage.delay then
+  --  script.on_nth_tick(10, nil)
+  --  return
+  --end
+  local delay = storage.delayed or {}
+  if storage.paused then return end -- debug
+  for dt, arr in pairs(delay) do
+    if 10*dt < game.tick then
+      -- process this array
+      for _,data in pairs(arr) do
+        on_built(data, true)
+      end
+      delay[dt] = nil
+    end
+  end
+  if not next(delay) then
+    storage.ticking = false
+    script.on_nth_tick(10, nil)
+  end
+end
+
+local function delayed(data, delay)
+  if not storage.delayed then
+    storage.delayed = {}
+  end
+  local delayed = storage.delayed
+  local dtick = math.ceil((game.tick + delay)/10)
+  if not delayed[dtick] then
+    delayed[dtick] = {}
+  end
+  table.insert(delayed[dtick], data)
+  if not storage.ticking then
+    storage.ticking = true
+    script.on_nth_tick(10, on_tick)
+  end
+end
+
+
 local function check_entity(entity_name, qname)
     if name_lookup[entity_name] ~= nil then return name_lookup[entity_name] end
     name_lookup[entity_name] = prototypes.entity[qname.."-"..entity_name] and true or false
     return name_lookup[entity_name]
 end
 
-local on_built = function (data)
+on_built = function(data, now)
     local entity = data.entity
+    --storage.last = entity -- debug
+    if not entity.valid then return end
     if entity.quality.level == 0 then return end
     if not check_entity(entity.name, entity.quality.name) then return end
 
     local surface = entity.surface
     local info = {
-            name = entity.quality.name .. "-" .. entity.name,
-            position = entity.position,
-            quality = entity.quality,
-            force = entity.force,
-            fast_replace = true,
-            --player = entity.last_user,
-            orientation = entity.orientation, -- rolling stock
-            color = entity.color, -- rolling stock
-            direction = entity.direction, -- buildings
-            raise_built = true,
-            spill=false
-        }
-    if entity.type == "locomotive" or entity.type == "cargo-wagon" or entity.type == "fluid-wagon" or entity.type == "artillery-wagon" then
+        name = entity.quality.name .. "-" .. entity.name,
+        position = entity.position,
+        quality = entity.quality,
+        force = entity.force,
+        fast_replace = true,
+        --player = entity.last_user, -- required for "spill=false" to work
+        orientation = entity.orientation, -- rolling stock
+        color = entity.color, -- rolling stock
+        direction = entity.direction, -- buildings
+        raise_built = true,
+        spill = false,
+        type = (entity.type == "loader" or entity.type == "loader-1x1") and entity.loader_type or entity.type == "underground-belt" and entity.belt_to_ground_type or nil, -- underground belt or loader
+        --filters = (entity.type == "loader" or entity.type == "loader-1x1") and entity.filters or nil, -- loader
+
+    }
+    if TRAINS[entity.type] then
         -- mobile entities -> fast replace wont work
         -- store relevant info (commented out: not relevant for newly placed entities)
         if entity.train then
             local sched = entity.train.schedule
             local manual = entity.train.manual_mode
         end
-        local inv = record_inventory(entity)
+        local inv = record_inventory(entity) -- possible blueprinted filters
         local grid = record_grid(entity.grid)
         --local fluid = entity.type == "fluid-wagon" and entity.get_fluid_contents() or nil
         --local burner = nil
@@ -210,7 +267,7 @@ local on_built = function (data)
 
         entity.destroy()
         local ne = surface.create_entity(info)
-        -- restore properties
+        -- restore properties (commented out: not relevant for newly placed entities)
         --if fluid then
         --    for name, amount in pairs(fluid) do ne.insert_fluid({name=name,amount=amount}) end
         --end
@@ -220,16 +277,31 @@ local on_built = function (data)
         --    ne.burner.currently_burning = burner[1]
         --    ne.burner.remaining_burning_fuel = burner[2]
         --end
-        if ne.train and manual_mode ~= nil then
+        if ne.train and ne.train.manual_mode ~= nil then
             ne.train.schedule = sched
             ne.train.manual_mode = manual or false
         end
     elseif entity.type == "construction-robot" or entity.type == "logistic-robot" then
       entity.destroy()
       surface.create_entity(info)
+    --elseif (entity.type == "transport-belt" or entity.type == "underground-belt") and not now then
+    elseif data.player_index and delayedPlacement[entity.type] and not now then -- don't delay replacement for robot/platform building
+      delayed(data, delayedPlacement[entity.type])
     else
       --entity.destroy()
-      surface.create_entity(info)
+      local res = surface.create_entity(info)
+      --if not res then
+      --  -- assume underground belt
+      --  print("couldn't fast replace")
+      --  print(entity)
+      --  entity.destroy()
+      --  local res = surface.create_entity(info)
+      --  if not res then game.print("unable to place new entity") end
+      --end
+      --if entity.valid then
+      --  -- somehow, original entity wasn't replaced
+      --  entity.destroy()
+      --end
     end
 end
 
