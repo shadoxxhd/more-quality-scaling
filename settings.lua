@@ -86,6 +86,21 @@ data:extend({
 		order = "i"
 	},
 	{
+		type = "string-setting",
+		name = "mqs-heat-changes",
+		setting_type = "startup",
+		default_value = "capacity",
+		allowed_values = {"none", "capacity", "temp", "both"},
+		order = "j"
+	},
+	{
+		type = "bool-setting",
+		name = "mqs-heating-range",
+		setting_type = "startup",
+		default_value = false,
+		order = "k"
+	},
+	{
 		type = "bool-setting",
 		name = "mqs-belt-changes",
 		setting_type = "startup",

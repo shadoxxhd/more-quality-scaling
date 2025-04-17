@@ -378,6 +378,46 @@ if settings.startup["mqs-mining-drill-changes"].value ~= "none" then
     data:extend(new)
 end
 
+if settings.startup["mqs-heat-changes"].value ~= "none" or settings.startup["mqs-heating-range"].value then
+    local mode = settings.startup["mqs-heat-changes"].value
+    local new = {}
+    for qname, qvalue in pairs(qualities) do
+        for name, original in pairs(data.raw["heat-pipe"]) do
+            local entity = table.deepcopy(original)
+            defaultChanges(entity, qname)
+
+            if mode == "temp" or mode == "both" then
+                entity.heat_buffer.max_temperature = entity.heat_buffer.max_temperature * qvalue
+            end
+            if mode == "capacity" or mode == "both" then
+                entity.heat_buffer.specific_heat = (util.parse_energy(entity.heat_buffer.specific_heat) * qvalue).."J"
+                entity.heat_buffer.max_transfer = (util.parse_energy(entity.heat_buffer.max_transfer) * qvalue).."J"
+            end
+            if settings.startup["mqs-heating-range"].value then
+                entity.heating_radius = entity.heating_radius + data.raw.quality[qname].level
+            end
+            table.insert(new, entity)
+        end
+        for name, original in pairs(data.raw["reactor"]) do
+            local entity = table.deepcopy(original)
+            defaultChanges(entity, qname)
+
+            if mode == "temp" or mode == "both" then
+                entity.heat_buffer.max_temperature = entity.heat_buffer.max_temperature * qvalue
+            end
+            if mode == "capacity" or mode == "both" then
+                entity.heat_buffer.specific_heat = (util.parse_energy(entity.heat_buffer.specific_heat) * qvalue).."J"
+                entity.heat_buffer.max_transfer = (util.parse_energy(entity.heat_buffer.max_transfer) * qvalue).."J"
+            end
+            if settings.startup["mqs-heating-range"].value then
+                entity.heating_radius = entity.heating_radius + data.raw.quality[qname].level
+            end
+            table.insert(new, entity)
+        end
+    end
+    data:extend(new)
+end
+
 -- SECTION robot changes
 if settings.startup["mqs-robot-changes"].value ~= "none" then
     local new = {}
