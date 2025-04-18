@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.3.1
+Date: 2025-04-18
+  Features:
+    - Added scaling for underground pipe length (linked to "underground scaling" setting)
+    - Dragging a Q-picked quality belt should respect scaled underground distance now (quality items still assume the length of normal quality undergrounds; the quality-belts mod fixes that by replacing quality items in your inventory, and should be compatible)
+  Bugfixes:
+    - Fixed heat_radius error
+    - Fixed train power calculation for modded trains
+    - Hardened braking force calculation and added scaling of robot max_speed (which limits robot speed research, and might be set for modded robots)
+---------------------------------------------------------------------------------------------------
 Version: 1.3.0
 Date: 2025-04-17
   Features:
