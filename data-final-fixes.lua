@@ -83,7 +83,7 @@ function defaultChanges(entity, qname)
 end
 
 function brakingChanges(entity, qvalue)
-    local bf = entity.breaking_force or entity.braking_power
+    local bf = entity.braking_force or entity.braking_power
     if type(bf) == "string" then
         bf = util.parse_energy(bf)
     end
