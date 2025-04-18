@@ -82,6 +82,15 @@ function defaultChanges(entity, qname)
     makePlacable(entity, qname, name)
 end
 
+function brakingChanges(entity, qvalue)
+    local bf = entity.breaking_force or entity.braking_power
+    if type(bf) == "string" then
+        bf = util.parse_energy(bf)
+    end
+    entity.breaking_force = bf * qvalue
+    entity.braking_power = nil
+end
+
 -- wagon changes
 --  compat: max speed of all wagons matches max quality locomotive
 --  simple: as above, and capacity scales with quality
@@ -120,7 +129,9 @@ if wagonChanges == "full" then
             --wagon.inventory_size = wagon.inventory_size * qvalue
             wagon.quality_affects_inventory_size = true
             wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude) -- quality level differences are equivalent to RF quality differences - 4.5% per level. 
-            wagon.braking_force = wagon.braking_force * qvalue
+            --wagon.braking_force = (wagon.braking_force or wagon.braking_power) * qvalue
+            --wagon.braking_power = nil -- prevent duplicate entries if mods use _power over _force
+            brakingChanges(wagon, qvalue)
     
             table.insert(new, wagon)
         end
@@ -138,7 +149,7 @@ if wagonChanges == "full" then
             --wagon.capacity = wagon.capacity * qvalue
             wagon.quality_affects_capacity = true
             wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude)
-            wagon.braking_force = wagon.braking_force * qvalue
+            brakingChanges(wagon, qvalue)
     
             table.insert(new, wagon)
         end
@@ -154,7 +165,7 @@ if wagonChanges == "full" then
             makePlacable(wagon, qname, name)
     
             wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude)
-            wagon.braking_force = wagon.braking_force * qvalue
+            brakingChanges(wagon, qvalue)
     
             table.insert(new, wagon)
         end
@@ -228,7 +239,7 @@ if settings.startup["mqs-locomotive-changes"].value then
                     train.energy_source.effectivity = (train.energy_source.effectivity or 1) * qvalue / (1 + (qvalue-1) * speed_magnitude)^2
                 end
             end
-            train.braking_force = train.braking_force * qvalue
+            brakingChanges(train, qvalue)
 
             table.insert(new, train)
         end
@@ -440,6 +451,9 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
 
             if settings.startup["mqs-robot-changes"].value == "speed" or settings.startup["mqs-robot-changes"].value == "both" then
                 entity.speed = entity.speed * qvalue
+                if entity.max_speed then
+                    entity.max_speed = entity.max_speed * qvalue
+                end
             end
             if settings.startup["mqs-robot-changes"].value == "capacity" or settings.startup["mqs-robot-changes"].value == "both" then
                 entity.max_payload_size = entity.max_payload_size + math.floor(data.raw.quality[qname].level)
@@ -474,6 +488,9 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
 
             if settings.startup["mqs-robot-changes"].value == "speed" or settings.startup["mqs-robot-changes"].value == "both" then
                 entity.speed = entity.speed * qvalue
+                if entity.max_speed then
+                    entity.max_speed = entity.max_speed * qvalue
+                end
             end
             if settings.startup["mqs-robot-changes"].value == "capacity" or settings.startup["mqs-robot-changes"].value == "both" then
                 entity.max_payload_size = entity.max_payload_size + math.floor(data.raw.quality[qname].level)
