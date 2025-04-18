@@ -215,7 +215,8 @@ if settings.startup["mqs-locomotive-changes"].value then
             makePlacable(train, qname, name)
     
             train.max_speed = train.max_speed * (1 + (qvalue-1) * speed_magnitude)
-            train.max_power = tostring(600 * qvalue) .. "kW"
+            --train.max_power = tostring(600 * qvalue) .. "kW"
+            train.max_power = (util.parse_energy(train.max_power) * qvalue).."J"
             if train.energy_source.type == "burner" and fuelUse ~= "linear" then
                 if fuelUse == "constant" then
                     train.energy_source.effectivity = (train.energy_source.effectivity or 1) * qvalue
@@ -394,7 +395,7 @@ if settings.startup["mqs-heat-changes"].value ~= "none" or settings.startup["mqs
                 entity.heat_buffer.max_transfer = (util.parse_energy(entity.heat_buffer.max_transfer) * qvalue).."J"
             end
             if settings.startup["mqs-heating-range"].value then
-                entity.heating_radius = entity.heating_radius + data.raw.quality[qname].level
+                entity.heating_radius = (entity.heating_radius or 1) + data.raw.quality[qname].level
             end
             table.insert(new, entity)
         end
@@ -410,7 +411,7 @@ if settings.startup["mqs-heat-changes"].value ~= "none" or settings.startup["mqs
                 entity.heat_buffer.max_transfer = (util.parse_energy(entity.heat_buffer.max_transfer) * qvalue).."J"
             end
             if settings.startup["mqs-heating-range"].value then
-                entity.heating_radius = entity.heating_radius + data.raw.quality[qname].level
+                entity.heating_radius = (entity.heating_radius or 1) + data.raw.quality[qname].level
             end
             table.insert(new, entity)
         end
