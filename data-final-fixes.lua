@@ -305,6 +305,10 @@ if settings.startup["mqs-belt-changes"].value then
                 defaultChanges(entity, qname)
     
                 entity.speed = entity.speed * qvalue
+
+                if entity.related_underground_belt then -- for transport belt dragging
+                    entity.related_underground_belt = qname.."-"..entity.related_underground_belt
+                end
     
                 table.insert(new, entity)
             end
@@ -360,6 +364,30 @@ if settings.startup["mqs-belt-changes"].value or settings.startup["mqs-undergrou
             end
 
             table.insert(new, ubelt)
+        end
+    end
+    data:extend(new)
+end
+
+if settings.startup["mqs-underground-changes"].value then
+    local new = {}
+    for qname, qvalue in pairs(qualities) do
+        for name, original in pairs(data.raw["pipe-to-ground"]) do
+            local entity = table.deepcopy(original)
+
+            defaultChanges(entity, qname)
+
+            local changed = false
+
+            local pc = entity.fluid_box.pipe_connections
+            for i,j in pairs(pc) do
+                if j.max_underground_distance then
+                    j.max_underground_distance = j.max_underground_distance + data.raw.quality[qname].level
+                    changed = true
+                end
+            end
+
+            if changed then table.insert(new, ubelt) end
         end
     end
     data:extend(new)
