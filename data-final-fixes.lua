@@ -387,7 +387,7 @@ if settings.startup["mqs-underground-changes"].value then
                 end
             end
 
-            if changed then table.insert(new, ubelt) end
+            if changed then table.insert(new, entity) end
         end
     end
     data:extend(new)
