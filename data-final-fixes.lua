@@ -87,7 +87,7 @@ function brakingChanges(entity, qvalue)
     if type(bf) == "string" then
         bf = util.parse_energy(bf)
     end
-    entity.breaking_force = bf * qvalue
+    entity.braking_force = bf * qvalue
     entity.braking_power = nil
 end
 
