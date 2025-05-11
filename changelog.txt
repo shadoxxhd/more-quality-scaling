@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.4.0
+Date: 2025-05-11
+  Features:
+    - Added scaling option for agricultural towers (speed/area/both)
+  Bugfixes:
+    - Extra entities are now hidden from Factoripedia
+    - Fixed possible exploit with upgrade planners or modified blueprints
+    - Fixed duplication glitches occuring when fast replace fails
+---------------------------------------------------------------------------------------------------
 Version: 1.3.3
 Date: 2025-04-19
   Bugfixes:
