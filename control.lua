@@ -1,6 +1,8 @@
 local name_lookup = nil
 local qname = nil
 
+local qualities = nil
+
 -- 1s delay seems to work well
 local delayedPlacement = {
   ["transport-belt"] = 60,
@@ -222,7 +224,17 @@ end
 
 local function check_entity(entity_name, qname)
     if name_lookup[entity_name] ~= nil then return name_lookup[entity_name] end
-    name_lookup[entity_name] = prototypes.entity[qname.."-"..entity_name] and true or false
+    if prototypes.entity[qname.."-"..entity_name] then
+      name_lookup[entity_name] = entity_name
+    else
+      local a, b = string.match(entity_name, "^([^%-]+)%-(.*)$")
+      if a and b and qualities[a] and prototypes.entity[b] then
+        -- quality entity was placed
+        name_lookup[entity_name] = b
+      else
+        name_lookup[entity_name] = false
+      end
+    end
     return name_lookup[entity_name]
 end
 
@@ -230,12 +242,14 @@ on_built = function(data, now)
     local entity = data.entity
     --storage.last = entity -- debug
     if not entity.valid then return end
-    if entity.quality.level == 0 then return end
-    if not check_entity(entity.name, entity.quality.name) then return end
+    --if entity.quality.level == 0 then return end
+    --if not check_entity(entity.name, entity.quality.name) then return end
+    local base = check_entity(entity.name, entity.quality.name)
+    if not base then return end 
 
     local surface = entity.surface
     local info = {
-        name = entity.quality.name .. "-" .. entity.name,
+        name = entity.quality.name .. "-" .. base
         position = entity.position,
         quality = entity.quality,
         force = entity.force,
@@ -282,12 +296,14 @@ on_built = function(data, now)
             ne.train.manual_mode = manual or false
         end
     elseif entity.type == "construction-robot" or entity.type == "logistic-robot" then
+      -- mobile entities without configuration
       entity.destroy()
       surface.create_entity(info)
     --elseif (entity.type == "transport-belt" or entity.type == "underground-belt") and not now then
     elseif data.player_index and delayedPlacement[entity.type] and not now then -- don't delay replacement for robot/platform building
       delayed(data, delayedPlacement[entity.type])
     else
+      -- fast-replace
       --entity.destroy()
       local res = surface.create_entity(info)
       --if not res then
@@ -316,9 +332,17 @@ script.on_event(defines.events.script_raised_built, on_built)
 script.on_init(function()
     storage.name_lookup = {}
     name_lookup = storage.name_lookup
+    qualities = {}
+    for qn, q in pairs(prototypes.quality) do
+      qualities[qn] = q
+    end
 end)
 script.on_load(function()
     name_lookup = storage.name_lookup
+    qualities = {}
+    for qn, q in pairs(prototypes.quality) do
+      qualities[qn] = q
+    end
 end)
 
 script.on_configuration_changed(function()
