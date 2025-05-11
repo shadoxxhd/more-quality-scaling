@@ -79,6 +79,7 @@ function defaultChanges(entity, qname)
     entity.subgroup = "mqs-qualitised-entities-sub"
     entity.localised_name = {"entity-name."..name}
     entity.localised_description = {"entity-description."..name}
+    entity.hidden_in_factoripedia = true
     makePlacable(entity, qname, name)
 end
 
@@ -124,6 +125,7 @@ if wagonChanges == "full" then
             wagon.subgroup = "mqs-qualitised-entities-sub"
             wagon.localised_name = {"entity-name."..name}
             wagon.localised_description = {"entity-description."..name}
+            wagon.hidden_in_factoripedia = true
             makePlacable(wagon, qname, name)
             
             --wagon.inventory_size = wagon.inventory_size * qvalue
@@ -144,6 +146,7 @@ if wagonChanges == "full" then
             wagon.subgroup = "mqs-qualitised-entities-sub"
             wagon.localised_name = {"entity-name."..name}
             wagon.localised_description = {"entity-description."..name}
+            wagon.hidden_in_factoripedia = true
             makePlacable(wagon, qname, name)
     
             --wagon.capacity = wagon.capacity * qvalue
@@ -162,6 +165,7 @@ if wagonChanges == "full" then
             wagon.subgroup = "mqs-qualitised-entities-sub"
             wagon.localised_name = {"entity-name."..name}
             wagon.localised_description = {"entity-description."..name}
+            wagon.hidden_in_factoripedia = true
             makePlacable(wagon, qname, name)
     
             wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude)
@@ -223,6 +227,7 @@ if settings.startup["mqs-locomotive-changes"].value then
             train.subgroup = "mqs-qualitised-entities-sub"
             train.localised_name = {"entity-name."..name}
             train.localised_description = {"entity-description."..name}
+            train.hidden_in_factoripedia = true
             makePlacable(train, qname, name)
     
             train.max_speed = train.max_speed * (1 + (qvalue-1) * speed_magnitude)
@@ -257,7 +262,10 @@ if settings.startup["mqs-rocket-changes"].value then
             silo.subgroup = "mqs-qualitised-entities-sub"
             silo.localised_name = {"entity-name."..name}
             silo.localised_description = {"entity-description."..name}
+            silo.hidden_in_factoripedia = true
             makePlacable(silo, qname, name)
+
+            table.insert(silo.flags, "not-in-made-in")
 
             silo.door_opening_speed = silo.door_opening_speed * qvalue
             silo.light_blinking_speed = silo.light_blinking_speed * qvalue
@@ -403,6 +411,8 @@ if settings.startup["mqs-mining-drill-changes"].value ~= "none" then
             local entity = table.deepcopy(original)
             defaultChanges(entity, qname)
 
+            table.insert(entity.flags,"not-in-made-in")
+
             if settings.startup["mqs-mining-drill-changes"].value == "speed" or settings.startup["mqs-mining-drill-changes"].value == "both" then
                 entity.mining_speed = entity.mining_speed * qvalue
             end
@@ -469,6 +479,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
             entity.subgroup = "mqs-qualitised-entities-sub"
             entity.localised_name = {"entity-name."..name}
             entity.localised_description = {"entity-description."..name}
+            entity.hidden_in_factoripedia = true
             -- skip makePlacable
             -- drop specific item
             local iname = nil
@@ -506,6 +517,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
             entity.subgroup = "mqs-qualitised-entities-sub"
             entity.localised_name = {"entity-name."..name}
             entity.localised_description = {"entity-description."..name}
+            entity.hidden_in_factoripedia = true
             -- skip makePlacable
             -- drop specific item
             local iname = nil
