@@ -222,7 +222,7 @@ local function delayed(data, delay)
 end
 
 
-local function check_entity(entity_name, qname)
+local function check_entity(entity_name)
     if name_lookup[entity_name] ~= nil then return name_lookup[entity_name] end
     if prototypes.entity[qname.."-"..entity_name] then
       name_lookup[entity_name] = entity_name
@@ -244,12 +244,14 @@ on_built = function(data, now)
     if not entity.valid then return end
     --if entity.quality.level == 0 then return end
     --if not check_entity(entity.name, entity.quality.name) then return end
-    local base = check_entity(entity.name, entity.quality.name)
-    if not base then return end 
+    local base = check_entity(entity.name)
+    if not base then return end
 
+    local name = (entity.quality.level == 0 and "" or entity.quality.name .. "-") .. base
+    if name == entity.name then return end
     local surface = entity.surface
     local info = {
-        name = entity.quality.name .. "-" .. base
+        name = name,
         position = entity.position,
         quality = entity.quality,
         force = entity.force,
@@ -314,7 +316,7 @@ on_built = function(data, now)
       --  local res = surface.create_entity(info)
       --  if not res then game.print("unable to place new entity") end
       --end
-      if entity.valid then
+      if res and res.valid and entity.valid then
         -- somehow, original entity wasn't replaced
         -- this means fast replace didn't work -> need fix!
         entity.destroy()
@@ -335,6 +337,9 @@ script.on_init(function()
     qualities = {}
     for qn, q in pairs(prototypes.quality) do
       qualities[qn] = q
+      if not qname and q.level > 0 then
+        qname = qn
+      end
     end
 end)
 script.on_load(function()
@@ -342,6 +347,9 @@ script.on_load(function()
     qualities = {}
     for qn, q in pairs(prototypes.quality) do
       qualities[qn] = q
+      if not qname and q.level > 0 then
+        qname = qn
+      end
     end
 end)
 
