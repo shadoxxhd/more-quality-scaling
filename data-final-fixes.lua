@@ -428,6 +428,46 @@ if settings.startup["mqs-mining-drill-changes"].value ~= "none" then
     data:extend(new)
 end
 
+if settings.startup["mqs-agritower-changes"].value ~= "none" then
+    local new = {}
+    for name, original in pairs(data.raw["agricultural-tower"]) do
+        for qname, qvalue in pairs(qualities) do
+            local entity = table.deepcopy(original)
+            defaultChanges(entity, qname)
+
+            table.insert(entity.flags,"not-in-made-in")
+
+            local factor = qvalue
+
+            if settings.startup["mqs-agritower-changes"].value == "both+" then
+                local level = data.raw.quality[qname].level
+                -- basic quadratic scaling
+                ----factor = (factor-1) * 0.5 + 1 -- only 15% per level (either 0.5 (1.15) or 0.46725 (sqrt(1.3)~=1.14))
+                --factor = 1 + level * 0.15
+                --factor = factor * factor
+                -- scaling directly proportional to area
+                factor = (1 + 2*entity.radius * (1+level*0.15) + level*0.102)
+                factor = (factor * factor - 1)/48 -- quadratic improvement
+            end
+            if settings.startup["mqs-agritower-changes"].value == "speed" or settings.startup["mqs-agritower-changes"].value == "both" or settings.startup["mqs-agritower-changes"].value == "both+" then
+                local prop = entity.crane.speed
+                prop.arm.turn_rate = prop.arm.turn_rate * factor
+                prop.arm.extension_speed = prop.arm.extension_speed * factor * ((settings.startup["mqs-agritower-changes"].value=="both+") and math.sqrt(factor) or 1)
+                prop.grappler.vertical_turn_rate = prop.grappler.vertical_turn_rate * factor
+                prop.grappler.horizontal_turn_rate = prop.grappler.horizontal_turn_rate * factor
+                prop.grappler.extension_speed = prop.grappler.extension_speed * factor
+            end
+            if settings.startup["mqs-agritower-changes"].value == "area" or settings.startup["mqs-agritower-changes"].value == "both" or settings.startup["mqs-agritower-changes"].value == "both+" then
+                entity.radius = entity.radius + math.floor((entity.radius+0.34)*data.raw.quality[qname].level*0.15)
+                -- one extra tile on every 2nd quality level
+            end
+
+            table.insert(new, entity)
+        end
+    end
+    data:extend(new)
+end
+
 if settings.startup["mqs-heat-changes"].value ~= "none" or settings.startup["mqs-heating-range"].value then
     local mode = settings.startup["mqs-heat-changes"].value
     local new = {}

@@ -87,18 +87,26 @@ data:extend({
 	},
 	{
 		type = "string-setting",
+		name = "mqs-agritower-changes",
+		setting_type = "startup",
+		default_value = "speed",
+		allowed_values = {"none", "speed", "range", "both", "both+"},
+		order = "j"
+	},
+	{
+		type = "string-setting",
 		name = "mqs-heat-changes",
 		setting_type = "startup",
 		default_value = "capacity",
 		allowed_values = {"none", "capacity", "temp", "both"},
-		order = "j"
+		order = "k"
 	},
 	{
 		type = "bool-setting",
 		name = "mqs-heating-range",
 		setting_type = "startup",
 		default_value = false,
-		order = "k"
+		order = "l"
 	},
 	{
 		type = "bool-setting",
