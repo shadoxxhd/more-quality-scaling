@@ -298,10 +298,11 @@ on_built = function(data, now)
       --  local res = surface.create_entity(info)
       --  if not res then game.print("unable to place new entity") end
       --end
-      --if entity.valid then
-      --  -- somehow, original entity wasn't replaced
-      --  entity.destroy()
-      --end
+      if entity.valid then
+        -- somehow, original entity wasn't replaced
+        -- this means fast replace didn't work -> need fix!
+        entity.destroy()
+      end
     end
 end
 
