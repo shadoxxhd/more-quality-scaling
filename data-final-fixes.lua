@@ -430,7 +430,7 @@ end
 
 if settings.startup["mqs-agritower-changes"].value ~= "none" then
     local new = {}
-    for name, original in pairs(data.raw["agricultural-tower"]) do
+    for name, original in pairs(data.raw["agricultural-tower"] or {}) do
         for qname, qvalue in pairs(qualities) do
             local entity = table.deepcopy(original)
             defaultChanges(entity, qname)
