@@ -368,7 +368,7 @@ if settings.startup["mqs-belt-changes"].value or settings.startup["mqs-undergrou
                 ubelt.speed = ubelt.speed * qvalue
             end
             if settings.startup["mqs-underground-changes"].value then
-                ubelt.max_distance = ubelt.max_distance + data.raw.quality[qname].level
+                ubelt.max_distance = math.min(ubelt.max_distance + data.raw.quality[qname].level,255)
             end
 
             table.insert(new, ubelt)
@@ -389,8 +389,8 @@ if settings.startup["mqs-underground-changes"].value then
 
             local pc = entity.fluid_box.pipe_connections
             for i,j in pairs(pc) do
-                if j.max_underground_distance then
-                    j.max_underground_distance = j.max_underground_distance + data.raw.quality[qname].level
+                if j.max_underground_distance and j.max_underground_distance < 255 then
+                    j.max_underground_distance = math.min(j.max_underground_distance + data.raw.quality[qname].level,255)
                     changed = true
                 end
             end
