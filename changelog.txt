@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.4.2
+Date: 2025-05-11
+  Bugfixes:
+    - Fixed incompatibility of underground length scaling with Infinite Quality Tiers mod
+---------------------------------------------------------------------------------------------------
 Version: 1.4.1
 Date: 2025-05-11
   Bugfixes:
