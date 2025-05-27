@@ -1,6 +1,6 @@
 # More Quality Scaling
 
-Adds configurable quality scaling to Locomotives, Wagons, Storage Tanks, Rocket Silos and Roboports
+Adds configurable quality scaling to locomotives, wagons, storage tanks, rocket silos and roboports
 
 ### Locomotive
 
@@ -32,7 +32,7 @@ Alternatively, wagons of all qualities support the top speed of the best quality
 
 ### Artillery Wagon
 
-No direct change, but internally increased max speed to match the increased Locomotive speed (either statically or linked to quality)
+No direct change, but internally increases max speed to match the increased Locomotive speed (either statically or linked to quality)
 
 ### Storage Tank
 
@@ -40,11 +40,32 @@ Increases fluid capacity (+30% per level).
 
 ### Rocket Silos
 
-Silo door opening speed, rocket rising speed and launch speed are affected by quality (+30% per level; effect identical to QualityRockets, but can apply to modded rocket silos).
+Silo door opening speed, rocket rising speed and launch speed are affected by quality (+30% per level; effect identical to QualityRockets, but can apply to modded rocket silos). Since 1.1.0, door opening delay (blinking lights time), launch delay and rocket rising delay are also affected.
 
 ### Roboports
 
 Makes quality affect charging station count.
+
+### Robots (WIP)
+
+Robots that are placed in the world manually are converted into a new quality-specific item/entity that gives them a quality bonus to speed and/or cargo capacity.
+Inserting robots with quality into a roboport won't give them this bonus due to technical limitations.
+
+### Mining Drills
+
+Quality can improve mining speed (default), mining area or both.
+
+### Belts (disabled by default)
+
+Belts can scale their throughput (this also affects splitters, loaders, ...) and underground length can increase with quality.
+
+### Reactors and Heat Pipes
+
+Reactors and heat pipes of higher quality have increased heat capacity (default), higher maximum temperature or both.
+
+### Agricultural Towers
+
+ATs have increased movement speed (default), increased range (+1 every 2 quality levels) or both. There is also the option of speed scaling proportional to the area improvement, instead of linearly (this allows above-legendary ATs to keep up with their gigantic planting areas).
 
 #### Configuration
 
