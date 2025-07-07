@@ -24,6 +24,22 @@ local carriage_inventories = {
   defines.inventory.artillery_wagon_ammo
 }
 
+-- actually currently unused, but might be needed later
+---- tablemap: additional functions to allow indexing by 1-shallow table equality
+--
+---- returns actual key for shallow-equality class of table
+--local function tablemap_get(tbl, key)
+--  for i, j in pairs(tbl) do
+--    if type(i) == "table" then
+--      local e = true
+--      for k, l in pairs(i) do
+--        if l ~= key[k] then e = false end
+--      end
+--      if e then return i end
+--    end
+--  end
+--end
+
 
 local function car_inv(car, typ)
   local inv = car.get_inventory(typ)
@@ -38,23 +54,22 @@ function record_inventory(car)
     if (inv ~= nil) then
       local entry = { slots = #inv }
       if (inv.supports_bar()) then
-        entry.bar = inv.get_bar()
+        entry.bar = inv.get_bar() -- uint
         if (entry.bar > entry.slots) then
           entry.bar = nil
-        else
-          entry.slots = entry.bar
         end
       end
       if (inv.is_filtered()) then
         entry.filters = { }
+        --local bar_filtered = false
         for i = 1, entry.slots do
-          entry.filters[i] = inv.get_filter(i)
+          entry.filters[i] = inv.get_filter(i) -- ItemFilter instead of string
+          --if i > entry.bar and entry.filters[i] then bar_filtered = true end -- doesn't matter since bar isn't scaled anyway, so no unwanted loading can occur from not extending filters
         end
       end
-      if ((not inv.is_empty()) or (entry.bar ~= nil) or
-          (entry.filters ~= nil)) then
+      if (not inv.is_empty() or entry.bar or entry.filtered) then
         if (contents == nil) then contents = { } end
-        entry.contents = inv.get_contents()
+        entry.contents = inv.get_contents() -- array[ItemWithQualityCounts] instead of string -> count
         contents[inv_type] = entry
       end
     end
@@ -64,27 +79,33 @@ end
 
 function restore_inventory(car, contents)
   if (contents == nil) then return end
+  local remaining = {}
   for inv_type, entry in pairs(contents) do
     local inv = car.get_inventory(inv_type)
     if ((inv ~= nil) and inv.valid) then
       local slots = #inv
-      if (inv.supports_bar() and (entry.bar ~= nil) and
+      if (inv.supports_bar() and entry.bar ~= nil and
           (entry.bar < slots)) then
         inv.set_bar(entry.bar)
         slots = entry.bar
       end
 
-      if (inv.supports_filters() and (entry.filters ~= nil)) then
-        if (slots == entry.slots) then
-          for i = 1, entry.slots do
+      if (inv.supports_filters() and entry.filters ~= nil) then
+        if (slots == entry.slots or (entry.bar and entry.bar <= slots)) then
+          local sl = math.min(entry.bar or entry.slots, entry.slots)
+          for i = 1, sl do
             inv.set_filter(i, entry.filters[i])
           end
         else
+          -- seems to match filter fractions - probably useful...
+          -- TODO: add detection for column-ordered filters (simply extend/contract vertically, instead of reordering)
           local totals = { }
           local different = 0
           for i = 1, entry.slots do
             local filter = entry.filters[i]
-            if (filter == nil) then filter = " " end
+            if (filter == nil) then filter = "" else
+              filter = filter.comparator.."\\"..filter.name.."\\"..filter.quality
+            end
             if (totals[filter] == nil) then
               totals[filter] = 1
               different = different + 1
@@ -93,20 +114,22 @@ function restore_inventory(car, contents)
             end
           end
           
-          local oldslots = entry.slots
+          local oldslots = math.min(entry.bar or entry.slots, entry.slots)
           local newslots = slots
           local current = 1
           for filter, count in pairs(totals) do
             local num = 1
             if (oldslots > 0) then
-              local fraction = (newslots * count) / oldslots
-              num = math.max(1, math.floor(fraction + 0.5))
+              local fraction = (newslots * count) / oldslots -- desired slot count
+              num = math.max(1, math.floor(fraction + 0.5)) -- round, but attempt to not eradicate type
             end
             local last = current + num - 1
             if (last > slots) then
               last = slots
             end
-            if ((filter ~= " ") and (last >= current)) then
+            if (filter ~= "" and last >= current) then
+              local comp, name, qual = string.match(filter,"([^\\]+)\\([^\\]+)\\([^\\]+)")
+              filter = {comparator=comp, name=name, quality=qual}
               for i = current, last do
                 inv.set_filter(i, filter)
               end
@@ -118,17 +141,27 @@ function restore_inventory(car, contents)
         end
       end
 
-      for itemname, amount in pairs(entry.contents) do
-        local inserted = inv.insert({name=itemname, count=amount})
-        local remaining = amount - inserted
-        if (remaining < 1) then remaining = nil end
-        entry.contents[itemname] = remaining
+      for _, entry in pairs(entry.contents) do
+        local inserted = inv.insert({name=entry.name, count=entry.count, quality = entry.quality})
+        if entry.count > inserted then
+          entry.count = entry.count - inserted
+          table.insert(remaining, entry)
+        end
+        --local rem = entry.count - inserted
+        --if (rem > 0) then
+        --  key = tablemap_get(remaining, {name=entry.name, quality=entry.quality}) or {name=entry.name, quality=entry.quality}
+        --  remaining[key] = (remaining[key] or 0) + rem
+        --end
+
+        --entry.contents[itemname] = remaining
       end
     end
   end
+  return remaining
 end
 
 function record_grid(grid)
+  -- todo: record grid ghosts?
   if ((grid == nil) or (not grid.valid)) then return nil end
   if (grid.count() < 1) then return nil end
   local contents = { }
@@ -178,6 +211,7 @@ function restore_grid(grid, contents)
       end
     end
   end
+  -- TODO: return surplus equipment and 
   return ret
 end
 
@@ -287,7 +321,10 @@ on_built = function(data, now)
         --if fluid then
         --    for name, amount in pairs(fluid) do ne.insert_fluid({name=name,amount=amount}) end
         --end
-        restore_inventory(ne, inv)
+        local surplus = restore_inventory(ne, inv)
+        for _, entry in pairs(surplus) do
+          entity.surface.spill_item_stack({position=info.position, stack=entry, drop_full_stack=true, enable_looted=true, force=info.force})
+        end
         restore_grid(ne.grid, grid)
         --if ne.burner and ne.burner.valid and ne.burner.fuel_categories[burner[1].fuel_category] then
         --    ne.burner.currently_burning = burner[1]
