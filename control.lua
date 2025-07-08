@@ -322,7 +322,7 @@ on_built = function(data, now)
         --    for name, amount in pairs(fluid) do ne.insert_fluid({name=name,amount=amount}) end
         --end
         local surplus = restore_inventory(ne, inv)
-        for _, entry in pairs(surplus) do
+        for _, entry in pairs(surplus or {}) do
           entity.surface.spill_item_stack({position=info.position, stack=entry, drop_full_stack=true, enable_looted=true, force=info.force})
         end
         restore_grid(ne.grid, grid)
