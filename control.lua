@@ -315,7 +315,7 @@ on_built = function(data, now)
         --    burner = {entity.burner.currently_burning, entity.burner.remaining_burning_fuel}
         --end
 
-        entity.destroy()
+        entity.destroy({raise_destroy=true})
         local ne = surface.create_entity(info)
         -- restore properties (commented out: not relevant for newly placed entities)
         --if fluid then
@@ -336,7 +336,7 @@ on_built = function(data, now)
         end
     elseif entity.type == "construction-robot" or entity.type == "logistic-robot" then
       -- mobile entities without configuration
-      entity.destroy()
+      entity.destroy({raise_destroy=true})
       surface.create_entity(info)
     --elseif (entity.type == "transport-belt" or entity.type == "underground-belt") and not now then
     elseif data.player_index and delayedPlacement[entity.type] and not now then -- don't delay replacement for robot/platform building
@@ -356,7 +356,7 @@ on_built = function(data, now)
       if res and res.valid and entity.valid then
         -- somehow, original entity wasn't replaced
         -- this means fast replace didn't work -> need fix!
-        entity.destroy()
+        entity.destroy({raise_destroy=true})
       end
     end
 end
@@ -394,3 +394,10 @@ script.on_configuration_changed(function()
     storage.name_lookup = {}
     name_lookup = storage.name_lookup
 end)
+
+-- TODO
+-- - add command that allows category-based replacement of entities with their correct qualitized version or their base version (for install/uninstall situations)
+--   - in the case of trains, simply flag 
+-- - add function that replaces flagged trains on arrival in station, and notifies the player when all flagged trains have been replaced
+-- - either a) add hotkey to switch between underground item and qualitized blueprint, or b) replace undergrounds in hand with qualitized item, then replace items in inventory with normal ones when clearing hand
+--   - practically, an override for "q" on a placed underground entity to switch between the blueprint and the item might be sufficient. alt+scroll quality changes would still complicate things though...
