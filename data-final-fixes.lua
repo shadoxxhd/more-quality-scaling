@@ -483,6 +483,23 @@ if settings.startup["mqs-heat-changes"].value ~= "none" or settings.startup["mqs
             end
             table.insert(new, entity)
         end
+        for name, original in pairs(getEntities("boiler")) do
+            if entity.energy_source.type == "heat" then
+                local entity = table.deepcopy(original)
+                defaultChanges(entity, qname)
+
+                if mode == "temp" or mode == "both" then
+                    entity.energy_source.max_temperature = entity.energy_source.max_temperature * qvalue
+                end
+                if mode == "capacity" or mode == "both" then
+                    entity.energy_source.specific_heat = (util.parse_energy(entity.energy_source.specific_heat) * qvalue).."J"
+                    entity.energy_source.max_transfer = (util.parse_energy(entity.energy_source.max_transfer) * qvalue).."J"
+                end
+                table.insert(new, entity)
+            end
+        end
+        -- todo: maybe add heat interface?
+        -- todo: maybe add anything with heat_energy_source? (Agritower, MiningDrill; Boiler, CraftingMachine (AssemblingMachine, Furnace, *RocketSilo*), Inserter, Lab, OffshorePump, Pump, Radar, *Reactor*)
     end
     data:extend(new)
 end
@@ -569,6 +586,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
 
     -- TODO: add items, add recipes to convert specific qualities of normal robots into the quality-specific deployer items,
     --          add machine for these recipes? ("calibrator" - alternatively, "calibrate" the bots in an assembler)
+    -- alternative: add "robot deployer" chest (maybe black logistic chest sprite?) that places qualitized robots in the world
 
     data:extend(new)
 end
@@ -578,4 +596,5 @@ end
 -- - quality belt drag-placing
 -- - underground indicators
 -- - correct underground connections (copy&paste works correctly, manual placement sometimes doesn't)
--- - mining drill area preview
+--   - maybe place blueprint/special item in cursor via hotkey?? eg. double-q on same underground replaces item-in-hand with blueprint-in-hand?
+-- - mining drill area preview (also allow easy placement at edge of deposit!)
