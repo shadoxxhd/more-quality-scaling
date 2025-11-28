@@ -1,4 +1,15 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.4.8
+Date: 2025-11-28
+  Changes:
+    - Refactored the "Change mod entities" setting into "Limit to vanilla entities" - this now affects all modification categories, as one would expect. If you had disabled "Change mod entities", you might want to enable the new setting to get the same behavior.
+    - Applied temperature/heat capacity scaling to heat exchangers
+    - Added an optional setting to add quality icons to entities of qualities above normal. This can potentially be useful when dealing with circuit signals representing placed entities, but is generally unnecessary.
+    - Added `entity-clones` mod-data to help mod compatibility with quality-scaled entities
+    - Now ignores entities listed in `clone-blacklist` mod-data, as a proposed interface to prevent mod incompatibility
+  Bugfixes:
+    - Fixed events when replacing entities (mod compatibility)
+---------------------------------------------------------------------------------------------------
 Version: 1.4.5
 Date: 2025-07-08
   Bugfixes:
