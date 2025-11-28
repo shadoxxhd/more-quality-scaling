@@ -17,12 +17,12 @@ local speed_magnitude = settings.startup["mqs-speed-magnitude"].value + 0
 --local efficiency = settings.startup["mqs-efficiency"].value
 local fuelUse = settings.startup["mqs-fuel-consumption"].value
 
-local changeAll = settings.startup["mqs-only-vanilla"].value
+local changeAll = not settings.startup["mqs-only-vanilla"].value
 local qualityInName = settings.startup["mqs-quality-in-name"].value
 local wagonChanges = settings.startup["mqs-wagon-changes"].value
 
 if not data.raw["mod-data"]["entity-clones"] then
-    data:extend({type="mod-data", name="entity-clones", data={}})
+    data:extend({{type="mod-data", name="entity-clones", data={}}})
 end
 local modData = data.raw["mod-data"]["entity-clones"].data
 local cloneBlacklist = (data.raw["mod-data"]["clone-blacklist"] or {data={}}).data
@@ -84,7 +84,7 @@ function defaultChanges(entity, qname)
     local name = entity.name
     entity.name = qname .. "-" .. name
     entity.subgroup = "mqs-qualitised-entities-sub"
-    entity.localised_name = qualityInName and {"", "[quality="..qname.."]", {"entity-name."..name}} or entity.localised_name = {"entity-name."..name}
+    entity.localised_name = qualityInName and {"", "[quality="..qname.."]", {"entity-name."..name}} or {"entity-name."..name}
     entity.localised_description = {"entity-description."..name}
     entity.hidden_in_factoripedia = true
     makePlacable(entity, qname, name)
@@ -479,7 +479,7 @@ if settings.startup["mqs-heat-changes"].value ~= "none" or settings.startup["mqs
             table.insert(new, entity)
         end
         for name, original in pairs(getEntities("boiler")) do
-            if entity.energy_source.type == "heat" then
+            if original.energy_source.type == "heat" then
                 local entity = table.deepcopy(original)
                 defaultChanges(entity, qname)
 

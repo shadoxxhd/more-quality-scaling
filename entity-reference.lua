@@ -19,7 +19,7 @@ local vanilla = {
 	["agricultural-tower"] = {},
 	["heat-pipe"] = {"heat-pipe"},
 	["reactor"] = {"nuclear-reactor"},
-	["boiler"] = {"boiler", "heat-exchanger"}
+	["boiler"] = {"boiler", "heat-exchanger"},
 	["logistic-robot"] = {"logistic-robot"},
 	["construction-robot"] = {"construction-robot"},
 
