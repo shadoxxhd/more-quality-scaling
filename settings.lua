@@ -127,6 +127,21 @@ data:extend({
 		name = "mqs-change-all",
 		setting_type = "startup",
 		default_value = true,
+		hidden = true,
+		order = "y"
+	},
+	{
+		type = "bool-setting",
+		name = "mqs-only-vanilla",
+		setting_type = "startup",
+		default_value = false,
+		order = "y"
+	},
+	{
+		type = "bool-setting",
+		name = "mqs-quality-in-name",
+		setting_type = "startup",
+		default_value = false,
 		order = "z"
 	}
 })

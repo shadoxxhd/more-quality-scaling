@@ -17,11 +17,16 @@ local speed_magnitude = settings.startup["mqs-speed-magnitude"].value + 0
 --local efficiency = settings.startup["mqs-efficiency"].value
 local fuelUse = settings.startup["mqs-fuel-consumption"].value
 
-local changeAll = settings.startup["mqs-change-all"].value
+local changeAll = settings.startup["mqs-only-vanilla"].value
+local qualityInName = settings.startup["mqs-quality-in-name"].value
 local wagonChanges = settings.startup["mqs-wagon-changes"].value
 
-local itemLookup = {}
+if not data.raw["mod-data"]["entity-clones"] then
+    data:extend({type="mod-data", name="entity-clones", data={}})
+end
+local modData = data.raw["mod-data"]["entity-clones"].data
 
+local itemLookup = {}
 
 -- if no placeable_by entry exists and the item has a different name, special handling might be necessary
 function makePlacable(entity, qname, basename)
@@ -78,10 +83,12 @@ function defaultChanges(entity, qname)
     local name = entity.name
     entity.name = qname .. "-" .. name
     entity.subgroup = "mqs-qualitised-entities-sub"
-    entity.localised_name = {"entity-name."..name}
+    entity.localised_name = qualityInName and {"", "[quality="..qname.."]", {"entity-name."..name}} or entity.localised_name = {"entity-name."..name}
     entity.localised_description = {"entity-description."..name}
     entity.hidden_in_factoripedia = true
     makePlacable(entity, qname, name)
+    if(not modData[name]) then modData[name] = {} end
+    table.insert(modData[name],entity.name)
 end
 
 function brakingChanges(entity, qvalue)
@@ -133,12 +140,7 @@ if wagonChanges == "full" then
         for name, original in pairs(getEntities("cargo-wagon")) do
             original.quality_affects_inventory_size = true -- show the quality UI for the item
             local wagon = table.deepcopy(original)
-            wagon.name = qname .. "-" .. name
-            wagon.subgroup = "mqs-qualitised-entities-sub"
-            wagon.localised_name = {"entity-name."..name}
-            wagon.localised_description = {"entity-description."..name}
-            wagon.hidden_in_factoripedia = true
-            makePlacable(wagon, qname, name)
+            defaultChanges(wagon, qname)
             
             --wagon.inventory_size = wagon.inventory_size * qvalue
             wagon.quality_affects_inventory_size = true
@@ -154,12 +156,7 @@ if wagonChanges == "full" then
         for name, original in pairs(getEntities("fluid-wagon")) do
             original.quality_affects_capacity = true
             local wagon = table.deepcopy(original)
-            wagon.name = qname .. "-" .. name
-            wagon.subgroup = "mqs-qualitised-entities-sub"
-            wagon.localised_name = {"entity-name."..name}
-            wagon.localised_description = {"entity-description."..name}
-            wagon.hidden_in_factoripedia = true
-            makePlacable(wagon, qname, name)
+            defaultChanges(wagon, qname)
     
             --wagon.capacity = wagon.capacity * qvalue
             wagon.quality_affects_capacity = true
@@ -173,12 +170,7 @@ if wagonChanges == "full" then
         for name, original in pairs(getEntities("artillery-wagon")) do
             original.quality_affects_inventory_size = true
             local wagon = table.deepcopy(original)
-            wagon.name = qname .. "-" .. name
-            wagon.subgroup = "mqs-qualitised-entities-sub"
-            wagon.localised_name = {"entity-name."..name}
-            wagon.localised_description = {"entity-description."..name}
-            wagon.hidden_in_factoripedia = true
-            makePlacable(wagon, qname, name)
+            defaultChanges(wagon, qname)
     
             wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude)
             brakingChanges(wagon, qvalue)
@@ -235,12 +227,7 @@ if settings.startup["mqs-locomotive-changes"].value then
     for qname, qvalue in pairs(qualities) do
         for name, original in pairs(getEntities("locomotive")) do
             local train = table.deepcopy(original)
-            train.name = qname .. "-" .. name
-            train.subgroup = "mqs-qualitised-entities-sub"
-            train.localised_name = {"entity-name."..name}
-            train.localised_description = {"entity-description."..name}
-            train.hidden_in_factoripedia = true
-            makePlacable(train, qname, name)
+            defaultChanges(train, qname)
     
             train.max_speed = train.max_speed * (1 + (qvalue-1) * speed_magnitude)
             --train.max_power = tostring(600 * qvalue) .. "kW"
@@ -270,12 +257,7 @@ if settings.startup["mqs-rocket-changes"].value then
     for qname, qvalue in pairs(qualities) do
         for name, original in pairs(getEntities("rocket-silo")) do
             local silo = table.deepcopy(original)
-            silo.name = qname.."-"..name
-            silo.subgroup = "mqs-qualitised-entities-sub"
-            silo.localised_name = {"entity-name."..name}
-            silo.localised_description = {"entity-description."..name}
-            silo.hidden_in_factoripedia = true
-            makePlacable(silo, qname, name)
+            defaultChanges(silo, qname)
 
             table.insert(silo.flags, "not-in-made-in")
 
@@ -286,8 +268,11 @@ if settings.startup["mqs-rocket-changes"].value then
             silo.launch_wait_time = math.ceil((silo.launch_wait_time or 120) / qvalue)
 
             local rocket = table.deepcopy(data.raw["rocket-silo-rocket"][silo.rocket_entity])
+            local oldname = rocket.name
             rocket.name = qname.."-"..rocket.name
             silo.rocket_entity = rocket.name
+            if(not modData[oldname]) then modData[oldname] = {} end
+            table.insert(modData[oldname],rocket.name)
 
             rocket.rising_speed = rocket.rising_speed * qvalue
             rocket.engine_starting_speed = rocket.engine_starting_speed * qvalue
@@ -510,13 +495,15 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
     for qname, qvalue in pairs(qualities) do
         for name, original in pairs(getEntities("logistic-robot")) do
             local entity = table.deepcopy(original)
-            
             entity.name = qname.."-"..name
             entity.subgroup = "mqs-qualitised-entities-sub"
             entity.localised_name = {"entity-name."..name}
             entity.localised_description = {"entity-description."..name}
             entity.hidden_in_factoripedia = true
             -- skip makePlacable
+            if(not modData[name]) then modData[name] = {} end
+            table.insert(modData[name],entity.name)
+
             -- drop specific item
             local iname = nil
             if entity.minable and entity.minable.result then
@@ -555,6 +542,9 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
             entity.localised_description = {"entity-description."..name}
             entity.hidden_in_factoripedia = true
             -- skip makePlacable
+            if(not modData[name]) then modData[name] = {} end
+            table.insert(modData[name],entity.name)
+            
             -- drop specific item
             local iname = nil
             if entity.minable and entity.minable.result then
@@ -598,3 +588,4 @@ end
 -- - correct underground connections (copy&paste works correctly, manual placement sometimes doesn't)
 --   - maybe place blueprint/special item in cursor via hotkey?? eg. double-q on same underground replaces item-in-hand with blueprint-in-hand?
 -- - mining drill area preview (also allow easy placement at edge of deposit!)
+-- - add custom_tooltip_field for scaling properties (probably make show_in_tooltip depend on setting?)
