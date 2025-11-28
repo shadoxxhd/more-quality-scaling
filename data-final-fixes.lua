@@ -25,6 +25,7 @@ if not data.raw["mod-data"]["entity-clones"] then
     data:extend({type="mod-data", name="entity-clones", data={}})
 end
 local modData = data.raw["mod-data"]["entity-clones"].data
+local cloneBlacklist = (data.raw["mod-data"]["clone-blacklist"] or {data={}}).data
 
 local itemLookup = {}
 
@@ -101,11 +102,20 @@ function brakingChanges(entity, qvalue)
 end
 
 function getEntities(category)
-    -- todo: implement blacklist
-    if(changeAll) then return data.raw[category] or {} end
+    -- WIP: implement blacklist
     local ret = {}
-    for _,j in pairs(reference[category] or {}) do
-        ret[j] = data.raw[category][j]
+    if(changeAll) then
+        for i,j in pairs(data.raw[category]) do
+            if not cloneBlacklist[i] then
+                ret[i]=j
+            end
+        end
+    else
+        for _,j in pairs(reference[category] or {}) do
+            if not cloneBlacklist[j] then
+                ret[j] = data.raw[category][j]
+            end
+        end
     end
     return ret
 end
@@ -544,7 +554,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
             -- skip makePlacable
             if(not modData[name]) then modData[name] = {} end
             table.insert(modData[name],entity.name)
-            
+
             -- drop specific item
             local iname = nil
             if entity.minable and entity.minable.result then
