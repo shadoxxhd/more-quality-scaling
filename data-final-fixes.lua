@@ -21,7 +21,7 @@ local changeAll = not settings.startup["mqs-only-vanilla"].value
 local qualityInName = settings.startup["mqs-quality-in-name"].value
 local wagonChanges = settings.startup["mqs-wagon-changes"].value
 
-if not data.raw["mod-data"]["entity-clones"] then
+if (not data.raw["mod-data"]) or (not data.raw["mod-data"]["entity-clones"]) then
     data:extend({{type="mod-data", name="entity-clones", data={}}})
 end
 local modData = data.raw["mod-data"]["entity-clones"].data
