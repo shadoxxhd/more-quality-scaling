@@ -4,6 +4,7 @@
     ["epic"] = 1.9,
     ["legendary"] = 2.5
 }]]
+local reference = require("entity-reference")[mods["space-age"] and "spage" or "vanilla"]
 
 local qualities = {}
 for name, qual in pairs(data.raw.quality) do
@@ -92,6 +93,17 @@ function brakingChanges(entity, qvalue)
     entity.braking_power = nil
 end
 
+function getEntities(category)
+    -- todo: implement blacklist
+    if(changeAll) then return data.raw[category] or {} end
+    local ret = {}
+    for _,j in pairs(reference[category] or {}) do
+        ret[j] = data.raw[category][j]
+    end
+    return ret
+end
+
+
 -- wagon changes
 --  compat: max speed of all wagons matches max quality locomotive
 --  simple: as above, and capacity scales with quality
@@ -118,7 +130,7 @@ data:extend{
 if wagonChanges == "full" then
     local new = {}
     for qname, qvalue in pairs(qualities) do
-        for name, original in pairs(changeAll and data.raw["cargo-wagon"] or {["cargo-wagon"]=data.raw["cargo-wagon"]["cargo-wagon"]}) do
+        for name, original in pairs(getEntities("cargo-wagon")) do
             original.quality_affects_inventory_size = true -- show the quality UI for the item
             local wagon = table.deepcopy(original)
             wagon.name = qname .. "-" .. name
@@ -139,7 +151,7 @@ if wagonChanges == "full" then
         end
     end
     for qname, qvalue in pairs(qualities) do
-        for name, original in pairs(changeAll and data.raw["fluid-wagon"] or {["fluid-wagon"]=data.raw["fluid-wagon"]["fluid-wagon"]}) do
+        for name, original in pairs(getEntities("fluid-wagon")) do
             original.quality_affects_capacity = true
             local wagon = table.deepcopy(original)
             wagon.name = qname .. "-" .. name
@@ -158,7 +170,7 @@ if wagonChanges == "full" then
         end
     end
     for qname, qvalue in pairs(qualities) do
-        for name, original in pairs(changeAll and data.raw["artillery-wagon"] or {["artillery-wagon"]=data.raw["artillery-wagon"]["artillery-wagon"]}) do
+        for name, original in pairs(getEntities("artillery-wagon")) do
             original.quality_affects_inventory_size = true
             local wagon = table.deepcopy(original)
             wagon.name = qname .. "-" .. name
@@ -183,19 +195,19 @@ else
     local speedFactor = (1 + (maxQ-1) * speed_magnitude)
     if not settings.startup["mqs-locomotive-changes"].value then speedFactor = 1 end -- if locomotives are not changed, there is no reason to modify maximum speeds
 
-    for name, original in pairs(changeAll and data.raw["cargo-wagon"] or {["cargo-wagon"]=data.raw["cargo-wagon"]["cargo-wagon"]}) do
+    for name, original in pairs(getEntities("cargo-wagon")) do
         if wagonChanges == "simple" then
             original.quality_affects_inventory_size = true
         end
         original.max_speed = original.max_speed * speedFactor
     end
-    for name, original in pairs(changeAll and data.raw["fluid-wagon"] or {["fluid-wagon"]=data.raw["fluid-wagon"]["fluid-wagon"]}) do
+    for name, original in pairs(getEntities("fluid-wagon")) do
         if wagonChanges == "simple" then
             original.quality_affects_capacity = true
         end
         original.max_speed = original.max_speed * speedFactor
     end
-    for name, original in pairs(changeAll and data.raw["artillery-wagon"] or {["artillery-wagon"]=data.raw["artillery-wagon"]["artillery-wagon"]}) do
+    for name, original in pairs(getEntities("artillery-wagon")) do
         original.max_speed = original.max_speed * speedFactor
     end
 end
@@ -203,7 +215,7 @@ end
 if settings.startup["mqs-storage-tank-changes"].value then
     local new = {}
     for qname, qvalue in pairs(qualities) do
-        for name, original in pairs(changeAll and data.raw["storage-tank"] or {["storage-tank"]=data.raw["storage-tank"]["storage-tank"]}) do repeat -- necessary for "break" to work as "continue"
+        for name, original in pairs(getEntities("storage-tank")) do repeat -- necessary for "break" to work as "continue"
             if name:match("^factory%-connection%-indicator%-") or name:match("^factory%-[1-3]$") then
                 break
             end
@@ -221,7 +233,7 @@ end
 if settings.startup["mqs-locomotive-changes"].value then
     local new = {}
     for qname, qvalue in pairs(qualities) do
-        for name, original in pairs(changeAll and data.raw["locomotive"] or {["locomotive"]=data.raw["locomotive"]["locomotive"]}) do
+        for name, original in pairs(getEntities("locomotive")) do
             local train = table.deepcopy(original)
             train.name = qname .. "-" .. name
             train.subgroup = "mqs-qualitised-entities-sub"
@@ -256,7 +268,7 @@ if settings.startup["mqs-rocket-changes"].value then
     -- todo: maybe add option for scaling intensity?
     local new = {}
     for qname, qvalue in pairs(qualities) do
-        for name, original in pairs(changeAll and data.raw["rocket-silo"] or {["rocket-silo"] = data.raw["rocket-silo"]["rocket-silo"]}) do
+        for name, original in pairs(getEntities("rocket-silo")) do
             local silo = table.deepcopy(original)
             silo.name = qname.."-"..name
             silo.subgroup = "mqs-qualitised-entities-sub"
@@ -291,13 +303,11 @@ end
 
 if settings.startup["mqs-roboport-changes"].value then
     -- todo: add option for range scaling
-    for _, roboport in pairs(changeAll and data.raw["roboport"] or {["roboport"] = data.raw["roboport"]["roboport"]}) do
+    for _, roboport in pairs(getEntities("roboport")) do
       roboport.charging_station_count_affected_by_quality = true
     end
     
-    for _, equip in pairs(changeAll and data.raw["roboport-equipment"]
-        or {["personal-roboport-equipment"]=data.raw["roboport-equipment"]["personal-roboport-equipment"],
-        ["personal-roboport-mk2-equipment"]=data.raw["roboport-equipment"]["personal-roboport-mk2-equipment"]}) do
+    for _, equip in pairs(getEntities("roboport-equipment")) do
       equip.charging_station_count_affected_by_quality = true
     end
 end
@@ -308,7 +318,7 @@ if settings.startup["mqs-belt-changes"].value then
     local categories = {"transport-belt", "splitter", "lane-splitter", "loader", "loader-1x1"}
     for _, cat in pairs(categories) do
         for qname, qvalue in pairs(qualities) do
-            for name, original in pairs(data.raw[cat]) do -- todo: add "vanilla only" option
+            for name, original in pairs(getEntities(cat)) do -- todo: add "vanilla only" option
                 local entity = table.deepcopy(original)
                 defaultChanges(entity, qname)
     
@@ -322,44 +332,13 @@ if settings.startup["mqs-belt-changes"].value then
             end
         end
     end
---    for qname, qvalue in pairs(qualities) do
---        for name, original in pairs(data.raw["splitter"]) do
---            local splitter = table.deepcopy(original)
---            defaultChanges(splitter, qname)
---
---            splitter.speed = splitter.speed * qvalue
---
---            table.insert(new, splitter)
---        end
---    end
---    for qname, qvalue in pairs(qualities) do
---        for name, original in pairs(data.raw["lane-splitter"]) do
---            local lsplitter = table.deepcopy(original)
---            defaultChanges(lsplitter, qname)
---
---            lsplitter.speed = lsplitter.speed * qvalue
---
---            table.insert(new, lsplitter)
---        end
---    end
---    for qname, qvalue in pairs(qualities) do
---        for name, original in pairs(data.raw["loader"]) do
---            local lsplitter = table.deepcopy(original)
---            defaultChanges(lsplitter, qname)
---
---            lsplitter.speed = lsplitter.speed * qvalue
---
---            table.insert(new, lsplitter)
---        end
---    end
---     ...loader-1x1
     data:extend(new)
 end
 
 if settings.startup["mqs-belt-changes"].value or settings.startup["mqs-underground-changes"].value then
     local new = {}
     for qname, qvalue in pairs(qualities) do
-        for name, original in pairs(data.raw["underground-belt"]) do
+        for name, original in pairs(getEntities("underground-belt")) do
             local ubelt = table.deepcopy(original)
 
             defaultChanges(ubelt, qname)
@@ -380,7 +359,7 @@ end
 if settings.startup["mqs-underground-changes"].value then
     local new = {}
     for qname, qvalue in pairs(qualities) do
-        for name, original in pairs(data.raw["pipe-to-ground"]) do
+        for name, original in pairs(getEntities("pipe-to-ground")) do
             local entity = table.deepcopy(original)
 
             defaultChanges(entity, qname)
@@ -403,7 +382,7 @@ end
 
 if settings.startup["mqs-mining-drill-changes"].value ~= "none" then
     local new = {}
-    for name, original in pairs(data.raw["mining-drill"]) do
+    for name, original in pairs(getEntities("mining-drill")) do
         --if not original.fast_replaceable_group then
         --    original.fast_replaceable_group = "mqs-"..original.name
         --end
@@ -430,7 +409,7 @@ end
 
 if settings.startup["mqs-agritower-changes"].value ~= "none" then
     local new = {}
-    for name, original in pairs(data.raw["agricultural-tower"] or {}) do
+    for name, original in pairs(getEntities("agricultural-tower")) do
         for qname, qvalue in pairs(qualities) do
             local entity = table.deepcopy(original)
             defaultChanges(entity, qname)
@@ -472,7 +451,7 @@ if settings.startup["mqs-heat-changes"].value ~= "none" or settings.startup["mqs
     local mode = settings.startup["mqs-heat-changes"].value
     local new = {}
     for qname, qvalue in pairs(qualities) do
-        for name, original in pairs(data.raw["heat-pipe"]) do
+        for name, original in pairs(getEntities("heat-pipe")) do
             local entity = table.deepcopy(original)
             defaultChanges(entity, qname)
 
@@ -488,7 +467,7 @@ if settings.startup["mqs-heat-changes"].value ~= "none" or settings.startup["mqs
             end
             table.insert(new, entity)
         end
-        for name, original in pairs(data.raw["reactor"]) do
+        for name, original in pairs(getEntities("reactor")) do
             local entity = table.deepcopy(original)
             defaultChanges(entity, qname)
 
@@ -512,7 +491,7 @@ end
 if settings.startup["mqs-robot-changes"].value ~= "none" then
     local new = {}
     for qname, qvalue in pairs(qualities) do
-        for name, original in pairs(data.raw["logistic-robot"]) do
+        for name, original in pairs(getEntities("logistic-robot")) do
             local entity = table.deepcopy(original)
             
             entity.name = qname.."-"..name
@@ -550,7 +529,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
         end
     end
     for qname, qvalue in pairs(qualities) do
-        for name, original in pairs(data.raw["construction-robot"]) do
+        for name, original in pairs(getEntities("construction-robot")) do
             local entity = table.deepcopy(original)
             
             entity.name = qname.."-"..name
