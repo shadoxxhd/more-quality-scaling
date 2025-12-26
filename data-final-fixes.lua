@@ -105,7 +105,7 @@ function getEntities(category)
     -- WIP: implement blacklist
     local ret = {}
     if(changeAll) then
-        for i,j in pairs(data.raw[category]) do
+        for i,j in pairs(data.raw[category] or {}) do
             if not cloneBlacklist[i] then
                 ret[i]=j
             end
