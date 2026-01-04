@@ -188,7 +188,7 @@ if wagonChanges == "full" then
             table.insert(new, wagon)
         end
     end
-    data:extend(new)
+    if next(new) then data:extend(new) end
 else
     local maxQ = 0
     for qname, qvalue in pairs(qualities) do
@@ -229,7 +229,7 @@ if settings.startup["mqs-storage-tank-changes"].value then
             table.insert(new, tank)
         until true; end
     end
-    data:extend(new)
+    if next(new) then data:extend(new) end
 end
 
 if settings.startup["mqs-locomotive-changes"].value then
@@ -258,7 +258,7 @@ if settings.startup["mqs-locomotive-changes"].value then
             table.insert(new, train)
         end
     end
-    data:extend(new)
+    if next(new) then data:extend(new) end
 end
 
 if settings.startup["mqs-rocket-changes"].value then
@@ -293,7 +293,7 @@ if settings.startup["mqs-rocket-changes"].value then
             table.insert(new, rocket)
         end
     end
-    data:extend(new)
+    if next(new) then data:extend(new) end
 end
 
 if settings.startup["mqs-roboport-changes"].value then
@@ -327,7 +327,7 @@ if settings.startup["mqs-belt-changes"].value then
             end
         end
     end
-    data:extend(new)
+    if next(new) then data:extend(new) end
 end
 
 if settings.startup["mqs-belt-changes"].value or settings.startup["mqs-underground-changes"].value then
@@ -348,7 +348,7 @@ if settings.startup["mqs-belt-changes"].value or settings.startup["mqs-undergrou
             table.insert(new, ubelt)
         end
     end
-    data:extend(new)
+    if next(new) then data:extend(new) end
 end
 
 if settings.startup["mqs-underground-changes"].value then
@@ -372,7 +372,7 @@ if settings.startup["mqs-underground-changes"].value then
             if changed then table.insert(new, entity) end
         end
     end
-    data:extend(new)
+    if next(new) then data:extend(new) end
 end
 
 if settings.startup["mqs-mining-drill-changes"].value ~= "none" then
@@ -399,7 +399,7 @@ if settings.startup["mqs-mining-drill-changes"].value ~= "none" then
             table.insert(new, entity)
         end
     end
-    data:extend(new)
+    if next(new) then data:extend(new) end
 end
 
 if settings.startup["mqs-agritower-changes"].value ~= "none" then
@@ -439,7 +439,7 @@ if settings.startup["mqs-agritower-changes"].value ~= "none" then
             table.insert(new, entity)
         end
     end
-    data:extend(new)
+    if next(new) then data:extend(new) end
 end
 
 if settings.startup["mqs-heat-changes"].value ~= "none" or settings.startup["mqs-heating-range"].value then
@@ -496,7 +496,7 @@ if settings.startup["mqs-heat-changes"].value ~= "none" or settings.startup["mqs
         -- todo: maybe add heat interface?
         -- todo: maybe add anything with heat_energy_source? (Agritower, MiningDrill; Boiler, CraftingMachine (AssemblingMachine, Furnace, *RocketSilo*), Inserter, Lab, OffshorePump, Pump, Radar, *Reactor*)
     end
-    data:extend(new)
+    if next(new) then data:extend(new) end
 end
 
 -- SECTION robot changes
@@ -588,7 +588,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
     --          add machine for these recipes? ("calibrator" - alternatively, "calibrate" the bots in an assembler)
     -- alternative: add "robot deployer" chest (maybe black logistic chest sprite?) that places qualitized robots in the world
 
-    data:extend(new)
+    if next(new) then data:extend(new) end
 end
 
 
