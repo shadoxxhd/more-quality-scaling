@@ -118,6 +118,20 @@ data:extend({
 	},
 	{
 		type = "bool-setting",
+		name = "mqs-cargo-pad-size",
+		setting_type = "startup",
+		default_value = true,
+		order = "q"
+	},
+	{
+		type = "bool-setting",
+		name = "mqs-platform-hub-changes",
+		setting_type = "startup",
+		default_value = true,
+		order = "r"
+	},
+	{
+		type = "bool-setting",
 		name = "mqs-belt-changes",
 		setting_type = "startup",
 		default_value = false,

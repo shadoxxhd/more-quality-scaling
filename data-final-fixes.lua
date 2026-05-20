@@ -458,6 +458,47 @@ if settings.startup["mqs-beacon-range"].value then
         beacon.quality_affects_supply_area_distance = true
     end
 end
+
+if settings.startup["mqs-cargo-pad-size"].value then
+    local new = {}
+    for name, original in pairs(getEntities("cargo-landing-pad")) do
+        if not original.fast_replaceable_group then
+            original.fast_replaceable_group = "mqs-"..original.name
+        end
+        for qname, qvalue in pairs(qualities) do
+            local entity = table.deepcopy(original)
+            defaultChanges(entity, qname)
+
+            entity.inventory_size = math.min(math.floor(entity.inventory_size * (data.raw.quality[qname].inventory_size_multiplier or qvalue)),65535)
+
+            table.insert(new, entity)
+        end
+    end
+    if next(new) then data:extend(new) end
+end
+
+if settings.startup["mqs-platform-hub-changes"].value then
+    local new = {}
+    for name, original in pairs(getEntities("space-platform-hub")) do
+        if not original.fast_replaceable_group then
+            original.fast_replaceable_group = "mqs-"..original.name
+        end
+        for qname, qvalue in pairs(qualities) do
+            local entity = table.deepcopy(original)
+            defaultChanges(entity, qname)
+
+            entity.inventory_size = math.min(math.floor(entity.inventory_size * (data.raw.quality[qname].inventory_size_multiplier or qvalue)),65535)
+            if entity.circuit_wire_max_distance then
+                entity.circuit_wire_max_distance = entity,circuit_wire_max_distance * qvalue
+            end
+            entity.platform_repair_speed_modifier = (entity.platform_repair_speed_modifier or 1) * qvalue
+
+            table.insert(new, entity)
+        end
+    end
+    if next(new) then data:extend(new) end
+end
+
 -- SECTION belts
 
 if settings.startup["mqs-belt-changes"].value then
