@@ -308,74 +308,6 @@ if settings.startup["mqs-roboport-changes"].value then
     end
 end
 
-if settings.startup["mqs-belt-changes"].value then
-    -- todo: loader, loader1x1
-    local new = {}
-    local categories = {"transport-belt", "splitter", "lane-splitter", "loader", "loader-1x1"}
-    for _, cat in pairs(categories) do
-        for qname, qvalue in pairs(qualities) do
-            for name, original in pairs(getEntities(cat)) do -- todo: add "vanilla only" option
-                local entity = table.deepcopy(original)
-                defaultChanges(entity, qname)
-    
-                entity.speed = entity.speed * qvalue
-
-                if entity.related_underground_belt then -- for transport belt dragging
-                    entity.related_underground_belt = qname.."-"..entity.related_underground_belt
-                end
-    
-                table.insert(new, entity)
-            end
-        end
-    end
-    if next(new) then data:extend(new) end
-end
-
-if settings.startup["mqs-belt-changes"].value or settings.startup["mqs-underground-changes"].value then
-    local new = {}
-    for qname, qvalue in pairs(qualities) do
-        for name, original in pairs(getEntities("underground-belt")) do
-            local ubelt = table.deepcopy(original)
-
-            defaultChanges(ubelt, qname)
-
-            if settings.startup["mqs-belt-changes"].value then
-                ubelt.speed = ubelt.speed * qvalue
-            end
-            if settings.startup["mqs-underground-changes"].value then
-                ubelt.max_distance = math.min(ubelt.max_distance + data.raw.quality[qname].level,255)
-            end
-
-            table.insert(new, ubelt)
-        end
-    end
-    if next(new) then data:extend(new) end
-end
-
-if settings.startup["mqs-underground-changes"].value then
-    local new = {}
-    for qname, qvalue in pairs(qualities) do
-        for name, original in pairs(getEntities("pipe-to-ground")) do
-            local entity = table.deepcopy(original)
-
-            defaultChanges(entity, qname)
-
-            local changed = false
-
-            local pc = entity.fluid_box.pipe_connections
-            for i,j in pairs(pc) do
-                if j.max_underground_distance and j.max_underground_distance < 255 then
-                    j.max_underground_distance = math.min(j.max_underground_distance + data.raw.quality[qname].level,255)
-                    changed = true
-                end
-            end
-
-            if changed then table.insert(new, entity) end
-        end
-    end
-    if next(new) then data:extend(new) end
-end
-
 if settings.startup["mqs-mining-drill-changes"].value ~= "none" then
     local new = {}
     for name, original in pairs(getEntities("mining-drill")) do
@@ -496,6 +428,75 @@ if settings.startup["mqs-heat-changes"].value ~= "none" or settings.startup["mqs
         end
         -- todo: maybe add heat interface?
         -- todo: maybe add anything with heat_energy_source? (Agritower, MiningDrill; Boiler, CraftingMachine (AssemblingMachine, Furnace, *RocketSilo*), Inserter, Lab, OffshorePump, Pump, Radar, *Reactor*)
+    end
+    if next(new) then data:extend(new) end
+end
+
+-- SECTION belts
+
+if settings.startup["mqs-belt-changes"].value then
+    local new = {}
+    local categories = {"transport-belt", "splitter", "lane-splitter", "loader", "loader-1x1"}
+    for _, cat in pairs(categories) do
+        for qname, qvalue in pairs(qualities) do
+            for name, original in pairs(getEntities(cat)) do -- todo: add "vanilla only" option
+                local entity = table.deepcopy(original)
+                defaultChanges(entity, qname)
+    
+                entity.speed = entity.speed * qvalue
+
+                if entity.related_underground_belt then -- for transport belt dragging
+                    entity.related_underground_belt = qname.."-"..entity.related_underground_belt
+                end
+    
+                table.insert(new, entity)
+            end
+        end
+    end
+    if next(new) then data:extend(new) end
+end
+
+if settings.startup["mqs-belt-changes"].value or settings.startup["mqs-underground-changes"].value then
+    local new = {}
+    for qname, qvalue in pairs(qualities) do
+        for name, original in pairs(getEntities("underground-belt")) do
+            local ubelt = table.deepcopy(original)
+
+            defaultChanges(ubelt, qname)
+
+            if settings.startup["mqs-belt-changes"].value then
+                ubelt.speed = ubelt.speed * qvalue
+            end
+            if settings.startup["mqs-underground-changes"].value then
+                ubelt.max_distance = math.min(ubelt.max_distance + data.raw.quality[qname].level,255)
+            end
+
+            table.insert(new, ubelt)
+        end
+    end
+    if next(new) then data:extend(new) end
+end
+
+if settings.startup["mqs-underground-changes"].value then
+    local new = {}
+    for qname, qvalue in pairs(qualities) do
+        for name, original in pairs(getEntities("pipe-to-ground")) do
+            local entity = table.deepcopy(original)
+
+            defaultChanges(entity, qname)
+
+            local changed = false
+
+            local pc = entity.fluid_box.pipe_connections
+            for i,j in pairs(pc) do
+                if j.max_underground_distance and j.max_underground_distance < 255 then
+                    j.max_underground_distance = math.min(j.max_underground_distance + data.raw.quality[qname].level,255)
+                    changed = true
+                end
+            end
+
+            if changed then table.insert(new, entity) end
+        end
     end
     if next(new) then data:extend(new) end
 end
