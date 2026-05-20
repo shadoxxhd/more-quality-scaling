@@ -72,14 +72,6 @@ data:extend({
 	},
 	{
 		type = "string-setting",
-		name = "mqs-robot-changes",
-		setting_type = "startup",
-		default_value = "speed",
-		allowed_values = {"none", "speed", "capacity", "both"},
-		order = "h"
-	},
-	{
-		type = "string-setting",
 		name = "mqs-mining-drill-changes",
 		setting_type = "startup",
 		default_value = "speed",
@@ -130,6 +122,15 @@ data:extend({
 		default_value = true,
 		order = "r"
 	},
+	-- WIP
+	{
+		type = "string-setting",
+		name = "mqs-robot-changes",
+		setting_type = "startup",
+		default_value = "speed",
+		allowed_values = {"none", "speed", "capacity", "both"},
+		order = "u"
+	},
 	{
 		type = "bool-setting",
 		name = "mqs-belt-changes",
@@ -150,7 +151,7 @@ data:extend({
 		setting_type = "startup",
 		default_value = true,
 		hidden = true,
-		order = "y"
+		order = "x"
 	},
 	{
 		type = "bool-setting",
