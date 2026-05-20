@@ -122,6 +122,22 @@ data:extend({
 		default_value = true,
 		order = "r"
 	},
+	{
+		type = "string-setting",
+		name = "mqs-electric-turret-changes",
+		setting_type = "startup",
+		default_value = "none",
+		allowed_values = {"none", "damage", "speed", "both"},
+		order = "s"
+	},
+	{
+		type = "string-setting",
+		name = "mqs-ammo-turret-changes",
+		setting_type = "startup",
+		default_value = "none",
+		allowed_values = {"none", "speed"},
+		order = "t"
+	},
 	-- WIP
 	{
 		type = "string-setting",
