@@ -111,6 +111,13 @@ data:extend({
 	},
 	{
 		type = "bool-setting",
+		name = "mqs-beacon-range",
+		setting_type = "startup",
+		default_value = false,
+		order = "p"
+	},
+	{
+		type = "bool-setting",
 		name = "mqs-belt-changes",
 		setting_type = "startup",
 		default_value = false,

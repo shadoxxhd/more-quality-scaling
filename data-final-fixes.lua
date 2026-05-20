@@ -453,6 +453,11 @@ if settings.startup["mqs-heat-changes"].value ~= "none" or settings.startup["mqs
     if next(new) then data:extend(new) end
 end
 
+if settings.startup["mqs-beacon-range"].value then
+    for _, beacon in pairs(getEntities("beacon")) do
+        beacon.quality_affects_supply_area_distance = true
+    end
+end
 -- SECTION belts
 
 if settings.startup["mqs-belt-changes"].value then
