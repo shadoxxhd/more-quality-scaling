@@ -9,7 +9,8 @@ local reference = require("entity-reference")[mods["space-age"] and "spage" or "
 local qualities = {}
 for name, qual in pairs(data.raw.quality) do
     if name ~= "quality-unknown" and name ~= "normal" then
-        qualities[name] = 1 + qual.level * 0.3
+        qualities[name] = qual.default_multiplier or (1 + qual.level * 0.3) -- respect changes to level progression
+        -- TODO: implement mod data system to let quality mods change specific scaling
     end
 end
 
