@@ -93,6 +93,14 @@ function defaultChanges(entity, qname)
     table.insert(modData[name],entity.name)
 end
 
+function addFlag(entity, flag)
+    if not entity.flags then
+        entity.flags = {flag}
+    else
+        table.insert(entity.flags, flag)
+    end
+end
+
 function brakingChanges(entity, qvalue)
     local bf = entity.braking_force or entity.braking_power
     if type(bf) == "string" then
@@ -363,7 +371,8 @@ if settings.startup["mqs-agritower-changes"].value ~= "none" then
             local entity = table.deepcopy(original)
             defaultChanges(entity, qname)
 
-            table.insert(entity.flags,"not-in-made-in")
+            addFlag(entity,"not-in-made-in")
+            --table.insert(entity.flags,"not-in-made-in")
 
             local factor = qvalue
 
