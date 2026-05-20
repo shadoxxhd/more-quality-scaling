@@ -63,10 +63,11 @@ data:extend({
 		order = "f"
 	},
 	{
-		type = "bool-setting",
+		type = "string-setting",
 		name = "mqs-roboport-changes",
 		setting_type = "startup",
-		default_value = true,
+		default_value = "speed",
+		allowed_values = {"none", "speed", "area", "both"},
 		order = "g"
 	},
 	{

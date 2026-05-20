@@ -297,14 +297,35 @@ if settings.startup["mqs-rocket-changes"].value then
     if next(new) then data:extend(new) end
 end
 
-if settings.startup["mqs-roboport-changes"].value then
-    -- todo: add option for range scaling
-    for _, roboport in pairs(getEntities("roboport")) do
-      roboport.charging_station_count_affected_by_quality = true
+if settings.startup["mqs-roboport-changes"].value ~= "none" then
+    local val = settings.startup["mqs-roboport-changes"].value
+    if val == "speed" or val == "both" then
+        -- todo: add option for range scaling
+        for _, roboport in pairs(getEntities("roboport")) do
+          roboport.charging_station_count_affected_by_quality = true
+        end
+
+        for _, equip in pairs(getEntities("roboport-equipment")) do
+          equip.charging_station_count_affected_by_quality = true
+        end
     end
-    
-    for _, equip in pairs(getEntities("roboport-equipment")) do
-      equip.charging_station_count_affected_by_quality = true
+    if val == "range" or val == "both" then
+        local new = {}
+        for qname, qvalue in pairs(qualities) do
+            for name, original in pairs(getEntities("roboport")) do
+                local entity = table.deepcopy(original)
+                defaultChanges(entity, qname)
+
+                -- optional radar_range: currently no tweak (int value)
+                entity.logistic_radius = entity.logistic_radius * qvalue
+                entity.construction_radius = entity.construction_radius * qvalue
+                entity.logistics_connection_distance = entity.logistics_connection_distance * qvalue
+
+                table.insert(new, entity)
+            end
+        end
+        -- TODO: modify roboport equipment
+        if next(new) then data:extend(new) end
     end
 end
 
