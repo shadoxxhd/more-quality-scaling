@@ -67,7 +67,7 @@ data:extend({
 		name = "mqs-roboport-changes",
 		setting_type = "startup",
 		default_value = "speed",
-		allowed_values = {"none", "speed", "area", "both"},
+		allowed_values = {"none", "speed", "range", "both"},
 		order = "g"
 	},
 	{
