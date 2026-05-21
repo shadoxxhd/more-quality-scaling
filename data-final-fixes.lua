@@ -721,11 +721,30 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
     if next(new) then data:extend(new) end
 end
 
+-- SECTION items
+-- very WIP - need new control code to replace items when eqipped on player (weapons, hand items) or grid
+
+-- weapons: shooting speed and/or damage factor
+-- ammo: probably unchanged (damage scaling already works fine; AoE scaling probably overkill and would be inconsistent vs. turrets)
+-- capsules: AoE scaling?? (might suffice to replace in cursor...)
+
+-- EQUIPMENT
+-- roboport: supply range
+-- night vision: maybe color tables??? (like that 3-tier night vision mod); otherwise energy consumption
+-- PLD: shooting speed and/or damage; maybe slight efficiency difference?
+-- discharge defense: speed and/or damage; maybe lower pushback distance (to allow more DPS)??
+
+
+
 
 -- general TODO
--- - quality belt drag-placing
+-- - quality belt drag-placing (works ok-ish for now)
 -- - underground indicators
 -- - correct underground connections (copy&paste works correctly, manual placement sometimes doesn't)
 --   - maybe place blueprint/special item in cursor via hotkey?? eg. double-q on same underground replaces item-in-hand with blueprint-in-hand?
--- - mining drill area preview (also allow easy placement at edge of deposit!)
+-- - mining drill area preview (also allow easy placement at edge of deposit! (requires either new items (replacement in hand) or item-to-blueprint))
 -- - add custom_tooltip_field for scaling properties (probably make show_in_tooltip depend on setting?)
+--   - check how custom_tooltip_field looks for a) base entities b) all entities c) base item
+
+-- research
+-- - factoriopedia_alternative
