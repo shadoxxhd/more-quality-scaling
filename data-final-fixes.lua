@@ -498,7 +498,7 @@ if settings.startup["mqs-platform-hub-changes"].value then
 
             entity.inventory_size = math.min(math.floor(entity.inventory_size * (data.raw.quality[qname].inventory_size_multiplier or qvalue)),65535)
             if entity.circuit_wire_max_distance then
-                entity.circuit_wire_max_distance = entity,circuit_wire_max_distance * qvalue
+                entity.circuit_wire_max_distance = entity.circuit_wire_max_distance * qvalue
             end
             entity.platform_repair_speed_modifier = (entity.platform_repair_speed_modifier or 1) * qvalue
 
@@ -521,6 +521,10 @@ if settings.startup["mqs-electric-turret-changes"].value ~= "none" then
 
             if val == "speed" or val == "both" then
                 entity.cooldown = entity.cooldown / qvalue
+                if entity.energy_source.type == "electric" then
+                    entity.energy_source.buffer_capacity = entity.energy_source.buffer_capacity * qvalue
+                    entity.energy_source.input_flow_limit = entity.energy_source.input_flow_limit * qvalue
+                end
             end
             if val == "damage" or val == "both" then
                 entity.damage_modifier = entity.damage_modifier * qvalue

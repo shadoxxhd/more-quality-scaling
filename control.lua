@@ -303,9 +303,11 @@ on_built = function(data, now)
     if TRAINS[entity.type] then
         -- mobile entities -> fast replace wont work
         -- store relevant info (commented out: not relevant for newly placed entities)
+        local sched = nil
+        local manual = nil
         if entity.train then
-            local sched = entity.train.schedule
-            local manual = entity.train.manual_mode
+            sched = entity.train.schedule
+            manual = entity.train.manual_mode
         end
         local inv = record_inventory(entity) -- possible blueprinted filters
         local grid = record_grid(entity.grid)
