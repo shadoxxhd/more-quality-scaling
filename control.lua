@@ -343,6 +343,15 @@ on_built = function(data, now)
     --elseif (entity.type == "transport-belt" or entity.type == "underground-belt") and not now then
     elseif data.player_index and delayedPlacement[entity.type] and not now then -- don't delay replacement for robot/platform building
       delayed(data, delayedPlacement[entity.type])
+    elseif entity.type == "space-platform-hub" then
+      -- fast-replace doesn't work, and inventory needs to be preserved (trash inventory should be empty, but just in case)
+      local inv1 = entity.get_inventory(defines.inventory.hub_main).get_contents()
+      local inv2 = entity.get_inventory(defines.inventory.hub_trash).get_contents()
+      local res = surface.create_entity(info)
+      if res and res.valid then
+        for _, elem in pairs(inv1) do res.get_inventory(defines.inventory.hub_main).insert(elem) end
+        for _, elem in pairs(inv2) do res.get_inventory(defines.inventory.hub_trash).insert(elem) end
+      end
     else
       -- fast-replace
       --entity.destroy()
@@ -369,6 +378,14 @@ script.on_event(defines.events.on_built_entity, on_built)
 script.on_event(defines.events.on_robot_built_entity, on_built)
 script.on_event(defines.events.on_space_platform_built_entity, on_built)
 script.on_event(defines.events.script_raised_built, on_built)
+
+script.on_event(defines.events.on_space_platform_changed_state, function(event)
+  if event.old_state == defines.space_platform_state.starter_pack_on_the_way then
+    -- assume that the platform exists now
+    local entity = event.platform.hub
+    on_built({entity = entity, player_index = nil})
+  end
+end)
 
 script.on_init(function()
     storage.name_lookup = {}
