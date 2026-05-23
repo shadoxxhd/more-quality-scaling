@@ -325,9 +325,11 @@ if settings.startup["mqs-roboport-changes"].value ~= "none" then
                 defaultChanges(entity, qname)
 
                 -- optional radar_range: currently no tweak (int value)
-                entity.logistic_radius = entity.logistic_radius * qvalue
+                entity.logistics_radius = entity.logistics_radius * qvalue
                 entity.construction_radius = entity.construction_radius * qvalue
-                entity.logistics_connection_distance = entity.logistics_connection_distance * qvalue
+                if entity.logistics_connection_distance then
+                    entity.logistics_connection_distance = entity.logistics_connection_distance * qvalue
+                end
 
                 table.insert(new, entity)
             end
