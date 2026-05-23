@@ -29,6 +29,7 @@ local modData = data.raw["mod-data"]["entity-clones"].data
 local cloneBlacklist = (data.raw["mod-data"]["clone-blacklist"] or {data={}}).data
 
 local itemLookup = {}
+local tooltips = {}
 
 -- if no placeable_by entry exists and the item has a different name, special handling might be necessary
 function makePlacable(entity, qname, basename)
@@ -101,6 +102,97 @@ function addFlag(entity, flag)
     end
 end
 
+-- AI code
+function multiplyEnergy(energy, qvalue)
+    if type(energy) == "string" then
+        return (util.parse_energy(energy) * qvalue).."J"
+    elseif type(energy) == "number" then
+        return energy * qvalue
+    else
+        log("MQS: unknown energy type: "..serpent.line(energy))
+        return energy
+    end
+end
+
+
+--function createTooltip(entity, propName, normalValue)
+--    if not entity.custom_tooltip_fields then entity.custom_tooltip_fields = {} end
+--    tooltips[entity.name] = {
+--        name = propName,
+--        quality_values = {normal = normalValue},
+--        order = 40,
+--        show_in_factoripedia = true,
+--        show_in_tooltip = settings.startup["mqs-adjustments-in-tooltip"].value
+--    }
+--    table.insert(entity.custom_tooltip_fields, tooltips[entity.name])
+--end
+--
+---- on first call, create the tooltip and store it in both the global table (indexed by entity name and property name) and the base entity prototype
+---- on subsequent calls, add the new quality and value to the tooltip and the tooltip to the derived entity
+--function extendTooltip(original, propName, qual, value)
+--    if not tooltips[original.name] then 
+--        createTooltip(original, "MQS "..qual, value)
+--     end
+--    local tooltip = tooltips[original.name]
+--    tooltips.quality_values[qual] = value
+--end
+
+
+
+function addTooltip(original, derived, propName, normalValue, qual, qualValue)
+    if not tooltips[original.name] then
+        tooltips[original.name] = {}
+    end
+    if not tooltips[original.name][propName] then
+        tooltips[original.name][propName] = {
+            name = propName,
+            quality_values = {normal = normalValue},
+            order = 40 + #tooltips[original.name],
+            show_in_factoripedia = true,
+            show_in_tooltip = settings.startup["mqs-adjustments-in-tooltip"].value
+        }
+        if not original.custom_tooltip_fields then original.custom_tooltip_fields = {} end
+        table.insert(original.custom_tooltip_fields, tooltips[original.name][propName])
+    end
+    tooltips[original.name][propName].quality_values[qual] = qualValue
+    if not derived.custom_tooltip_fields then derived.custom_tooltip_fields = {} end
+    table.insert(derived.custom_tooltip_fields, tooltips[original.name][propName])
+end
+
+function addTooltipB(original, derived, propName, qual, valueFunc)
+    addTooltip(original, derived, propName, valueFunc(original), qual, valueFunc(derived))
+end
+
+function formatSI(value, unit, fstr)
+    local prefixes = {"","k","M","G","T","P","E"}
+    local index = 1
+    if fstr == nil then fstr = "%.2f" end
+    while value >= 1000 and index < #prefixes do
+        value = value / 1000
+        index = index + 1
+    end
+    return string.format(fstr, value) .. " " .. prefixes[index] .. unit
+end
+
+-- only shows the given number of significant figures (e.g. 9.5k for 9500, or 12k for 11.7k, when sig=2)
+function formatSIB(value, unit, sig)
+    local prefixes = {"","k","M","G","T","P","E"}
+    local index = 1
+    while value >= 1000 and index < #prefixes do
+        value = value / 1000
+        index = index + 1
+    end
+    if sig == nil then sig = 2 end
+    local f = 0
+    while(value < 10^(sig-1-f)) do f = f+1 end
+    if f == 0 then
+        return math.floor(value)..prefixes[index] .. unit
+    else
+        return string.format("%."..f.."f", value) .. " " .. prefixes[index] .. unit
+    end
+end
+
+
 function brakingChanges(entity, qvalue)
     local bf = entity.braking_force or entity.braking_power
     if type(bf) == "string" then
@@ -167,6 +259,8 @@ if wagonChanges == "full" then
             --wagon.braking_force = (wagon.braking_force or wagon.braking_power) * qvalue
             --wagon.braking_power = nil -- prevent duplicate entries if mods use _power over _force
             brakingChanges(wagon, qvalue)
+            -- what's the correct unit for the speed?? TODO for all wagon types
+            --addTooltip(original, wagon, "max-speed", {"si-unit-kilometer-per-hour", tostring(math.floor(original.max_speed))})
     
             table.insert(new, wagon)
         end
@@ -234,6 +328,8 @@ if settings.startup["mqs-storage-tank-changes"].value then
             defaultChanges(tank, qname)
     
             tank.fluid_box.volume = tank.fluid_box.volume * qvalue
+
+            addTooltipB(original, tank, "fluid-capacity", qname, function(e) return formatSIB(e.fluid_box.volume) end)
     
             table.insert(new, tank)
         until true; end
@@ -251,6 +347,9 @@ if settings.startup["mqs-locomotive-changes"].value then
             train.max_speed = train.max_speed * (1 + (qvalue-1) * speed_magnitude)
             --train.max_power = tostring(600 * qvalue) .. "kW"
             train.max_power = (util.parse_energy(train.max_power) * qvalue).."J"
+            -- TODO: figure out correct unit for vehicle speed
+            --addTooltipB(original, train, "max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed))} end)
+            addTooltipB(original, train, "acceleration-power", qname, function(e) return formatSI(util.parse_energy(e.max_power)/60,"W") end)
             if train.energy_source.type == "burner" and fuelUse ~= "linear" then
                 if fuelUse == "constant" then
                     train.energy_source.effectivity = (train.energy_source.effectivity or 1) * qvalue
@@ -261,8 +360,12 @@ if settings.startup["mqs-locomotive-changes"].value then
                 elseif fuelUse == "qspeed" then
                     train.energy_source.effectivity = (train.energy_source.effectivity or 1) * qvalue / (1 + (qvalue-1) * speed_magnitude)^2
                 end
+                addTooltip(original, train, "effectivity", math.floor((original.energy_source.effectivity or 1)*100).."%", math.floor(train.energy_source.effectivity*100).."%")
             end
             brakingChanges(train, qvalue)
+
+            
+
 
             table.insert(new, train)
         end
@@ -285,6 +388,7 @@ if settings.startup["mqs-rocket-changes"].value then
 
             silo.rocket_rising_delay = math.ceil((silo.rocket_rising_delay or 30) / qvalue)
             silo.launch_wait_time = math.ceil((silo.launch_wait_time or 120) / qvalue)
+            addTooltip(original, silo, "mqs-mechanical-speed-factor", 1, qname, tostring(qvalue))
 
             local rocket = table.deepcopy(data.raw["rocket-silo-rocket"][silo.rocket_entity])
             local oldname = rocket.name
@@ -318,6 +422,10 @@ if settings.startup["mqs-roboport-changes"].value ~= "none" then
         end
     end
     if val == "range" or val == "both" then
+        local function formatArea(range)
+            local x = 2*math.floor(range)
+            return x.."x"..x
+        end
         local new = {}
         for qname, qvalue in pairs(qualities) do
             for name, original in pairs(getEntities("roboport")) do
@@ -330,6 +438,10 @@ if settings.startup["mqs-roboport-changes"].value ~= "none" then
                 if entity.logistics_connection_distance then
                     entity.logistics_connection_distance = entity.logistics_connection_distance * qvalue
                 end
+                --addTooltip(original, entity, "supply-area", formatArea(original.logistic_radius), qname, formatArea(entity.logistic_radius))
+                addTooltipB(original, entity, "supply-area", qname, function(e) return formatArea(e.logistic_radius) end)
+                --addTooltip(original, entity, "construction-area", formatArea(original.construction_radius), qname, formatArea(entity.construction_radius))
+                addTooltipB(original, entity, "construction-area", qname, function(e) return formatArea(e.construction_radius) end)
 
                 table.insert(new, entity)
             end
@@ -353,11 +465,14 @@ if settings.startup["mqs-mining-drill-changes"].value ~= "none" then
 
             if settings.startup["mqs-mining-drill-changes"].value == "speed" or settings.startup["mqs-mining-drill-changes"].value == "both" then
                 entity.mining_speed = entity.mining_speed * qvalue
+                --addTooltip(original, entity, "mining-speed", (math.floor(original.mining_speed*10)/10).."/s", qname, (math.floor(entity.mining_speed*10)/10).."/s")
+                addTooltipB(original, entity, "mining-speed", qname, function(e) return (math.floor(e.mining_speed*10)/10).."/s" end)
             end
             if settings.startup["mqs-mining-drill-changes"].value == "area" or settings.startup["mqs-mining-drill-changes"].value == "both" then
                 entity.resource_searching_radius = entity.resource_searching_radius + math.floor((entity.resource_searching_radius+1)*data.raw.quality[qname].level*0.15)
                 -- this formula results in a nice progression for base game drills: 5/5/7/7/9(/15) for mining drills, 13/15/17/19/23(/35) for big drills
                 -- "ancient drill" mod gets 25/29/33/37/45(/65)
+                addTooltipB(original, entity, "mining-area", qname, function(e) local r=math.floor(e.resource_searching_radius*2+1); return r.."x"..r end)
             end
 
             table.insert(new, entity)
@@ -395,9 +510,11 @@ if settings.startup["mqs-agritower-changes"].value ~= "none" then
                 prop.grappler.vertical_turn_rate = prop.grappler.vertical_turn_rate * factor
                 prop.grappler.horizontal_turn_rate = prop.grappler.horizontal_turn_rate * factor
                 prop.grappler.extension_speed = prop.grappler.extension_speed * factor
+                addTooltip(original, entity, "mqs-speed-factor", 1, qname, string.format("%.2f", factor))
             end
             if settings.startup["mqs-agritower-changes"].value == "area" or settings.startup["mqs-agritower-changes"].value == "both" or settings.startup["mqs-agritower-changes"].value == "both+" then
                 entity.radius = entity.radius + math.floor((entity.radius+0.34)*data.raw.quality[qname].level*0.15)
+                addTooltipB(original, entity, "mining-area", qname, function(e) local r=math.floor(e.radius)*2+1; return r.."x"..r end)
                 -- one extra tile on every 2nd quality level
             end
 
@@ -460,6 +577,7 @@ if settings.startup["mqs-heat-changes"].value ~= "none" or settings.startup["mqs
         end
         -- todo: maybe add heat interface?
         -- todo: maybe add anything with heat_energy_source? (Agritower, MiningDrill; Boiler, CraftingMachine (AssemblingMachine, Furnace, *RocketSilo*), Inserter, Lab, OffshorePump, Pump, Radar, *Reactor*)
+        -- todo: tooltips?
     end
     if next(new) then data:extend(new) end
 end
@@ -481,6 +599,7 @@ if settings.startup["mqs-cargo-pad-size"].value then
             defaultChanges(entity, qname)
 
             entity.inventory_size = math.min(math.floor(entity.inventory_size * (data.raw.quality[qname].inventory_size_multiplier or qvalue)),65535)
+            addTooltipB(original, entity, "storage", qname, function(e) return tostring(e.inventory_size) end)
 
             table.insert(new, entity)
         end
@@ -503,6 +622,8 @@ if settings.startup["mqs-platform-hub-changes"].value then
                 entity.circuit_wire_max_distance = entity.circuit_wire_max_distance * qvalue
             end
             entity.platform_repair_speed_modifier = (entity.platform_repair_speed_modifier or 1) * qvalue
+            addTooltipB(original, entity, "storage", qname, function(e) return tostring(e.inventory_size) end)
+            addTooltipB(original, entity, "mqs-repair-speed", qname, function(e) return tostring(e.platform_repair_speed_modifier) end)
 
             table.insert(new, entity)
         end
@@ -535,6 +656,7 @@ if settings.startup["mqs-electric-turret-changes"].value ~= "none" then
             if val == "damage" or val == "both" then
                 entity.attack_parameters.damage_modifier = (entity.attack_parameters.damage_modifier or 1) * qvalue
             end
+            -- todo: tooltip?
 
             table.insert(new, entity)
         end
@@ -559,6 +681,7 @@ if settings.startup["mqs-ammo-turret-changes"].value ~= "none" then
             if val == "damage" or val == "both" then
                 entity.attack_parameters.damage_modifier = (entity.attack_parameters.damage_modifier or 1) * qvalue
             end
+            -- todo: tooltip?
 
             table.insert(new, entity)
         end
@@ -573,7 +696,7 @@ if settings.startup["mqs-belt-changes"].value then
     local categories = {"transport-belt", "splitter", "lane-splitter", "loader", "loader-1x1"}
     for _, cat in pairs(categories) do
         for qname, qvalue in pairs(qualities) do
-            for name, original in pairs(getEntities(cat)) do -- todo: add "vanilla only" option
+            for name, original in pairs(getEntities(cat)) do
                 local entity = table.deepcopy(original)
                 defaultChanges(entity, qname)
     
@@ -582,6 +705,8 @@ if settings.startup["mqs-belt-changes"].value then
                 if entity.related_underground_belt then -- for transport belt dragging
                     entity.related_underground_belt = qname.."-"..entity.related_underground_belt
                 end
+
+                addTooltipB(original, entity, "belt-speed", qname, function(e) return {"",tostring(e.speed),"belt-items","per-second-suffix"} end)
     
                 table.insert(new, entity)
             end
@@ -600,9 +725,11 @@ if settings.startup["mqs-belt-changes"].value or settings.startup["mqs-undergrou
 
             if settings.startup["mqs-belt-changes"].value then
                 ubelt.speed = ubelt.speed * qvalue
+                addTooltipB(original, ubelt, "belt-speed", qname, function(e) return {"",tostring(e.speed),"belt-items","per-second-suffix"} end)
             end
             if settings.startup["mqs-underground-changes"].value then
                 ubelt.max_distance = math.min(ubelt.max_distance + data.raw.quality[qname].level,255)
+                addTooltipB(original, ubelt, "maximum-length", qname, function(e) return tostring(e.max_distance) end)
             end
 
             table.insert(new, ubelt)
@@ -621,15 +748,20 @@ if settings.startup["mqs-underground-changes"].value then
 
             local changed = false
 
+            local oldMax = 0
             local pc = entity.fluid_box.pipe_connections
             for i,j in pairs(pc) do
                 if j.max_underground_distance and j.max_underground_distance < 255 then
+                    oldMax = j.max_underground_distance
                     j.max_underground_distance = math.min(j.max_underground_distance + data.raw.quality[qname].level,255)
                     changed = true
                 end
             end
 
-            if changed then table.insert(new, entity) end
+            if changed then
+                addTooltip(original, entity, "maximum-length",oldMax, qname, tostring(math.min(oldMax + data.raw.quality[qname].level,255)))
+                table.insert(new, entity)
+            end
         end
     end
     if next(new) then data:extend(new) end
