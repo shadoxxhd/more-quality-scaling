@@ -181,6 +181,13 @@ data:extend({
 		name = "mqs-quality-in-name",
 		setting_type = "startup",
 		default_value = false,
-		order = "z"
+		order = "za"
+	},
+	{
+		type = "bool-setting",
+		name = "mqs-adjustments-in-tooltip",
+		setting_type = "startup",
+		default_value = true, -- for now - probably change to false when testing is done
+		order = "zb"
 	}
 })

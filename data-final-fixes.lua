@@ -145,8 +145,9 @@ function addTooltip(original, derived, propName, normalValue, qual, qualValue)
     end
     if not tooltips[original.name][propName] then
         tooltips[original.name][propName] = {
-            name = propName,
-            quality_values = {normal = normalValue},
+            name = {propName},
+            value = tostring(normalValue),
+            quality_values = {normal = tostring(normalValue)},
             order = 40 + #tooltips[original.name],
             show_in_factoripedia = true,
             show_in_tooltip = settings.startup["mqs-adjustments-in-tooltip"].value
@@ -154,9 +155,8 @@ function addTooltip(original, derived, propName, normalValue, qual, qualValue)
         if not original.custom_tooltip_fields then original.custom_tooltip_fields = {} end
         table.insert(original.custom_tooltip_fields, tooltips[original.name][propName])
     end
-    tooltips[original.name][propName].quality_values[qual] = qualValue
-    if not derived.custom_tooltip_fields then derived.custom_tooltip_fields = {} end
-    table.insert(derived.custom_tooltip_fields, tooltips[original.name][propName])
+    tooltips[original.name][propName].quality_values[qual] = tostring(qualValue)
+    derived.custom_tooltip_fields = original.custom_tooltip_fields
 end
 
 function addTooltipB(original, derived, propName, qual, valueFunc)
@@ -188,7 +188,7 @@ function formatSIB(value, unit, sig)
     if f == 0 then
         return math.floor(value)..prefixes[index] .. unit
     else
-        return string.format("%."..f.."f", value) .. " " .. prefixes[index] .. unit
+        return string.format("%."..f.."f", value) .. prefixes[index] .. unit
     end
 end
 
@@ -260,7 +260,7 @@ if wagonChanges == "full" then
             --wagon.braking_power = nil -- prevent duplicate entries if mods use _power over _force
             brakingChanges(wagon, qvalue)
             -- what's the correct unit for the speed?? TODO for all wagon types
-            --addTooltip(original, wagon, "max-speed", {"si-unit-kilometer-per-hour", tostring(math.floor(original.max_speed))})
+            --addTooltip(original, wagon, "max-speed", {"si-unit-kilometer-per-hour", tostring(math.floor(original.max_speed))}, ...
     
             table.insert(new, wagon)
         end
@@ -329,7 +329,7 @@ if settings.startup["mqs-storage-tank-changes"].value then
     
             tank.fluid_box.volume = tank.fluid_box.volume * qvalue
 
-            addTooltipB(original, tank, "fluid-capacity", qname, function(e) return formatSIB(e.fluid_box.volume) end)
+            addTooltipB(original, tank, "description.fluid-capacity", qname, function(e) return formatSIB(e.fluid_box.volume,"") end)
     
             table.insert(new, tank)
         until true; end
@@ -348,8 +348,8 @@ if settings.startup["mqs-locomotive-changes"].value then
             --train.max_power = tostring(600 * qvalue) .. "kW"
             train.max_power = (util.parse_energy(train.max_power) * qvalue).."J"
             -- TODO: figure out correct unit for vehicle speed
-            --addTooltipB(original, train, "max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed))} end)
-            addTooltipB(original, train, "acceleration-power", qname, function(e) return formatSI(util.parse_energy(e.max_power)/60,"W") end)
+            --addTooltipB(original, train, "description.max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed))} end)
+            addTooltipB(original, train, "description.acceleration-power", qname, function(e) return formatSI(util.parse_energy(e.max_power)*60,"W") end)
             if train.energy_source.type == "burner" and fuelUse ~= "linear" then
                 if fuelUse == "constant" then
                     train.energy_source.effectivity = (train.energy_source.effectivity or 1) * qvalue
@@ -360,7 +360,7 @@ if settings.startup["mqs-locomotive-changes"].value then
                 elseif fuelUse == "qspeed" then
                     train.energy_source.effectivity = (train.energy_source.effectivity or 1) * qvalue / (1 + (qvalue-1) * speed_magnitude)^2
                 end
-                addTooltip(original, train, "effectivity", math.floor((original.energy_source.effectivity or 1)*100).."%", math.floor(train.energy_source.effectivity*100).."%")
+                addTooltip(original, train, "description.effectivity", math.floor((original.energy_source.effectivity or 1)*100).."%", qname, math.floor(train.energy_source.effectivity*100).."%")
             end
             brakingChanges(train, qvalue)
 
@@ -388,7 +388,7 @@ if settings.startup["mqs-rocket-changes"].value then
 
             silo.rocket_rising_delay = math.ceil((silo.rocket_rising_delay or 30) / qvalue)
             silo.launch_wait_time = math.ceil((silo.launch_wait_time or 120) / qvalue)
-            addTooltip(original, silo, "mqs-mechanical-speed-factor", 1, qname, tostring(qvalue))
+            addTooltip(original, silo, "description.mqs-mechanical-speed-factor", 1, qname, qvalue)
 
             local rocket = table.deepcopy(data.raw["rocket-silo-rocket"][silo.rocket_entity])
             local oldname = rocket.name
@@ -465,14 +465,14 @@ if settings.startup["mqs-mining-drill-changes"].value ~= "none" then
 
             if settings.startup["mqs-mining-drill-changes"].value == "speed" or settings.startup["mqs-mining-drill-changes"].value == "both" then
                 entity.mining_speed = entity.mining_speed * qvalue
-                --addTooltip(original, entity, "mining-speed", (math.floor(original.mining_speed*10)/10).."/s", qname, (math.floor(entity.mining_speed*10)/10).."/s")
-                addTooltipB(original, entity, "mining-speed", qname, function(e) return (math.floor(e.mining_speed*10)/10).."/s" end)
+                --addTooltip(original, entity, "description.mining-speed", (math.floor(original.mining_speed*10)/10).."/s", qname, (math.floor(entity.mining_speed*10)/10).."/s")
+                addTooltipB(original, entity, "description.mining-speed", qname, function(e) return (math.floor(e.mining_speed*10)/10).."/s" end)
             end
             if settings.startup["mqs-mining-drill-changes"].value == "area" or settings.startup["mqs-mining-drill-changes"].value == "both" then
                 entity.resource_searching_radius = entity.resource_searching_radius + math.floor((entity.resource_searching_radius+1)*data.raw.quality[qname].level*0.15)
                 -- this formula results in a nice progression for base game drills: 5/5/7/7/9(/15) for mining drills, 13/15/17/19/23(/35) for big drills
                 -- "ancient drill" mod gets 25/29/33/37/45(/65)
-                addTooltipB(original, entity, "mining-area", qname, function(e) local r=math.floor(e.resource_searching_radius*2+1); return r.."x"..r end)
+                addTooltipB(original, entity, "description.mining-area", qname, function(e) local r=math.floor(e.resource_searching_radius*2+1); return r.."x"..r end)
             end
 
             table.insert(new, entity)
@@ -510,11 +510,11 @@ if settings.startup["mqs-agritower-changes"].value ~= "none" then
                 prop.grappler.vertical_turn_rate = prop.grappler.vertical_turn_rate * factor
                 prop.grappler.horizontal_turn_rate = prop.grappler.horizontal_turn_rate * factor
                 prop.grappler.extension_speed = prop.grappler.extension_speed * factor
-                addTooltip(original, entity, "mqs-speed-factor", 1, qname, string.format("%.2f", factor))
+                addTooltip(original, entity, "description.mqs-mechanical-speed-factor", 1, qname, string.format("%.2f", factor))
             end
             if settings.startup["mqs-agritower-changes"].value == "area" or settings.startup["mqs-agritower-changes"].value == "both" or settings.startup["mqs-agritower-changes"].value == "both+" then
                 entity.radius = entity.radius + math.floor((entity.radius+0.34)*data.raw.quality[qname].level*0.15)
-                addTooltipB(original, entity, "mining-area", qname, function(e) local r=math.floor(e.radius)*2+1; return r.."x"..r end)
+                addTooltipB(original, entity, "description.mining-area", qname, function(e) local r=math.floor(e.radius)*2+1; return r.."x"..r end)
                 -- one extra tile on every 2nd quality level
             end
 
@@ -599,7 +599,7 @@ if settings.startup["mqs-cargo-pad-size"].value then
             defaultChanges(entity, qname)
 
             entity.inventory_size = math.min(math.floor(entity.inventory_size * (data.raw.quality[qname].inventory_size_multiplier or qvalue)),65535)
-            addTooltipB(original, entity, "storage", qname, function(e) return tostring(e.inventory_size) end)
+            addTooltipB(original, entity, "description.storage", qname, function(e) return tostring(e.inventory_size) end)
 
             table.insert(new, entity)
         end
@@ -622,8 +622,8 @@ if settings.startup["mqs-platform-hub-changes"].value then
                 entity.circuit_wire_max_distance = entity.circuit_wire_max_distance * qvalue
             end
             entity.platform_repair_speed_modifier = (entity.platform_repair_speed_modifier or 1) * qvalue
-            addTooltipB(original, entity, "storage", qname, function(e) return tostring(e.inventory_size) end)
-            addTooltipB(original, entity, "mqs-repair-speed", qname, function(e) return tostring(e.platform_repair_speed_modifier) end)
+            addTooltipB(original, entity, "description.storage", qname, function(e) return tostring(e.inventory_size) end)
+            addTooltipB(original, entity, "description.mqs-repair-speed", qname, function(e) return tostring(e.platform_repair_speed_modifier) end)
 
             table.insert(new, entity)
         end
@@ -706,7 +706,7 @@ if settings.startup["mqs-belt-changes"].value then
                     entity.related_underground_belt = qname.."-"..entity.related_underground_belt
                 end
 
-                addTooltipB(original, entity, "belt-speed", qname, function(e) return {"",tostring(e.speed),"belt-items","per-second-suffix"} end)
+                addTooltipB(original, entity, "description.belt-speed", qname, function(e) return {"",tostring(e.speed),"belt-items","per-second-suffix"} end)
     
                 table.insert(new, entity)
             end
@@ -725,11 +725,11 @@ if settings.startup["mqs-belt-changes"].value or settings.startup["mqs-undergrou
 
             if settings.startup["mqs-belt-changes"].value then
                 ubelt.speed = ubelt.speed * qvalue
-                addTooltipB(original, ubelt, "belt-speed", qname, function(e) return {"",tostring(e.speed),"belt-items","per-second-suffix"} end)
+                addTooltipB(original, ubelt, "description.belt-speed", qname, function(e) return {"",tostring(e.speed),"belt-items","per-second-suffix"} end)
             end
             if settings.startup["mqs-underground-changes"].value then
                 ubelt.max_distance = math.min(ubelt.max_distance + data.raw.quality[qname].level,255)
-                addTooltipB(original, ubelt, "maximum-length", qname, function(e) return tostring(e.max_distance) end)
+                addTooltipB(original, ubelt, "description.maximum-length", qname, function(e) return tostring(e.max_distance) end)
             end
 
             table.insert(new, ubelt)
@@ -759,7 +759,7 @@ if settings.startup["mqs-underground-changes"].value then
             end
 
             if changed then
-                addTooltip(original, entity, "maximum-length",oldMax, qname, tostring(math.min(oldMax + data.raw.quality[qname].level,255)))
+                addTooltip(original, entity, "description.maximum-length", tostring(oldMax), qname, tostring(math.min(oldMax + data.raw.quality[qname].level,255)))
                 table.insert(new, entity)
             end
         end
