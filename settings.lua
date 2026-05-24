@@ -178,6 +178,13 @@ data:extend({
 		order = "x"
 	},
 	{
+		type = "string-setting",
+		name = "mqs-blacklist",
+		setting_type = "startup",
+		default_value = "",
+		order="xa"
+	},
+	{
 		type = "bool-setting",
 		name = "mqs-only-vanilla",
 		setting_type = "startup",

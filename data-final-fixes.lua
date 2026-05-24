@@ -245,6 +245,11 @@ data:extend{
     }
 }
 
+-- parse blacklist setting
+for str in settings.startup["mqs-blacklist"].value:gmatch("([^,]+)") do
+    cloneBlacklist[str] = true
+end
+
 if wagonChanges == "full" then
     local new = {}
     for qname, qvalue in pairs(qualities) do
