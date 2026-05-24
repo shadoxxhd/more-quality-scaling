@@ -522,14 +522,14 @@ if settings.startup["mqs-electric-turret-changes"].value ~= "none" then
             defaultChanges(entity, qname)
 
             if val == "speed" or val == "both" then
-                entity.cooldown = entity.cooldown / qvalue
+                entity.attack_parameters.cooldown = entity.attack_parameters.cooldown / qvalue
                 if entity.energy_source.type == "electric" then
                     entity.energy_source.buffer_capacity = entity.energy_source.buffer_capacity * qvalue
                     entity.energy_source.input_flow_limit = entity.energy_source.input_flow_limit * qvalue
                 end
             end
             if val == "damage" or val == "both" then
-                entity.damage_modifier = entity.damage_modifier * qvalue
+                entity.attack_parameters.damage_modifier = (entity.attack_parameters.damage_modifier or 1) * qvalue
             end
 
             table.insert(new, entity)
@@ -550,10 +550,10 @@ if settings.startup["mqs-ammo-turret-changes"].value ~= "none" then
             defaultChanges(entity, qname)
 
             if val == "speed" or val == "both" then
-                entity.cooldown = entity.cooldown / qvalue
+                entity.attack_parameters.cooldown = entity.attack_parameters.cooldown / qvalue
             end
             if val == "damage" or val == "both" then
-                entity.damage_modifier = entity.damage_modifier * qvalue
+                entity.attack_parameters.damage_modifier = (entity.attack_parameters.damage_modifier or 1) * qvalue
             end
 
             table.insert(new, entity)
