@@ -689,6 +689,31 @@ if settings.startup["mqs-ammo-turret-changes"].value ~= "none" then
     if next(new) then data:extend(new) end
 end
 
+if settings.startup["mqs-fluid-turret-changes"].value ~= "none" then
+    local val = settings.startup["mqs-fluid-turret-changes"].value
+    local new = {}
+    for name, original in pairs(getEntities("fluid-turret")) do
+        if not original.fast_replaceable_group then
+            original.fast_replaceable_group = "mqs-"..original.name
+        end
+        for qname, qvalue in pairs(qualities) do
+            local entity = table.deepcopy(original)
+            defaultChanges(entity, qname)
+
+            if val == "speed" or val == "both" then
+                entity.attack_parameters.cooldown = entity.attack_parameters.cooldown / qvalue
+            end
+            if val == "damage" or val == "both" then
+                entity.attack_parameters.damage_modifier = (entity.attack_parameters.damage_modifier or 1) * qvalue
+            end
+            -- todo: tooltip?
+
+            table.insert(new, entity)
+        end
+    end
+    if next(new) then data:extend(new) end
+end
+
 -- SECTION belts
 
 if settings.startup["mqs-belt-changes"].value then

@@ -128,7 +128,7 @@ data:extend({
 		setting_type = "startup",
 		default_value = "none",
 		allowed_values = {"none", "damage", "speed", "both"},
-		order = "s"
+		order = "sa"
 	},
 	{
 		type = "string-setting",
@@ -136,7 +136,15 @@ data:extend({
 		setting_type = "startup",
 		default_value = "none",
 		allowed_values = {"none", "speed"},
-		order = "t"
+		order = "sb"
+	},
+	{
+		type = "string-setting",
+		name = "mqs-fluid-turret-changes",
+		setting_type = "startup",
+		default_value = "none",
+		allowed_values = {"none", "damage", "speed", "both"},
+		order = "sc"
 	},
 	-- WIP
 	{
