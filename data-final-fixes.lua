@@ -657,9 +657,11 @@ if settings.startup["mqs-electric-turret-changes"].value ~= "none" then
                         entity.energy_source.input_flow_limit = (util.parse_energy(entity.energy_source.input_flow_limit) * qvalue).."J"
                     end
                 end
+                addTooltipB(original, entity, "description.shooting-speed", qname, function(e) return {"",string.format("%.2f",(60/e.attack_parameters.cooldown)),{"per-second-suffix"}} end)
             end
             if val == "damage" or val == "both" then
                 entity.attack_parameters.damage_modifier = (entity.attack_parameters.damage_modifier or 1) * qvalue
+                addTooltipB(original, entity, "description.damage-bonus", qname, function(e) return {"format-percent",tostring(math.floor((e.attack_parameters.damage_modifier-1)*100))} end)
             end
             -- todo: tooltip?
 
@@ -682,9 +684,11 @@ if settings.startup["mqs-ammo-turret-changes"].value ~= "none" then
 
             if val == "speed" or val == "both" then
                 entity.attack_parameters.cooldown = entity.attack_parameters.cooldown / qvalue
+                addTooltipB(original, entity, "description.shooting-speed", qname, function(e) return {"",string.format("%.2f",(60/e.attack_parameters.cooldown)),{"per-second-suffix"}} end)
             end
             if val == "damage" or val == "both" then
                 entity.attack_parameters.damage_modifier = (entity.attack_parameters.damage_modifier or 1) * qvalue
+                addTooltipB(original, entity, "description.damage-bonus", qname, function(e) return {"format-percent",tostring(math.floor((e.attack_parameters.damage_modifier-1)*100))} end)
             end
             -- todo: tooltip?
 
@@ -707,9 +711,11 @@ if settings.startup["mqs-fluid-turret-changes"].value ~= "none" then
 
             if val == "speed" or val == "both" then
                 entity.attack_parameters.cooldown = entity.attack_parameters.cooldown / qvalue
+                addTooltipB(original, entity, "description.shooting-speed", qname, function(e) return {"",string.format("%.2f",(60/e.attack_parameters.cooldown)),{"per-second-suffix"}} end)
             end
             if val == "damage" or val == "both" then
                 entity.attack_parameters.damage_modifier = (entity.attack_parameters.damage_modifier or 1) * qvalue
+                addTooltipB(original, entity, "description.damage-bonus", qname, function(e) return {"format-percent",tostring(math.floor((e.attack_parameters.damage_modifier-1)*100))} end)
             end
             -- todo: tooltip?
 
