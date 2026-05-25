@@ -443,8 +443,8 @@ if settings.startup["mqs-roboport-changes"].value ~= "none" then
                 if entity.logistics_connection_distance then
                     entity.logistics_connection_distance = entity.logistics_connection_distance * qvalue
                 end
-                --addTooltip(original, entity, "supply-area", formatArea(original.logistic_radius), qname, formatArea(entity.logistic_radius))
-                addTooltipB(original, entity, "supply-area", qname, function(e) return formatArea(e.logistic_radius) end)
+                --addTooltip(original, entity, "supply-area", formatArea(original.logistics_radius), qname, formatArea(entity.logistic_radius))
+                addTooltipB(original, entity, "supply-area", qname, function(e) return formatArea(e.logistics_radius) end)
                 --addTooltip(original, entity, "construction-area", formatArea(original.construction_radius), qname, formatArea(entity.construction_radius))
                 addTooltipB(original, entity, "construction-area", qname, function(e) return formatArea(e.construction_radius) end)
 
