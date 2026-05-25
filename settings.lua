@@ -182,6 +182,7 @@ data:extend({
 		name = "mqs-blacklist",
 		setting_type = "startup",
 		default_value = "",
+		allow_blank = true,
 		order="xa"
 	},
 	{
