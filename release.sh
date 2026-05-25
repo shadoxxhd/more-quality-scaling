@@ -1,0 +1,1 @@
+git archive --format=zip --prefix=more-quality-scaling/ -o ../more-quality-scaling_${1-VERSION}.zip HEAD
