@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.6.0
+Date: 2026-??-??
+  Features:
+    - Added tooltips showing the correct values for different quality levels
+    - Added entity blacklist setting, allowing users to exclude specific incompatible entities from the quality logic
+    - Added optional scaling for fluid turrets (the previous update only added electric and ammo turrets)
+---------------------------------------------------------------------------------------------------
 Version: 1.5.4
 Date: 2026-06-01
   Bugfixes:

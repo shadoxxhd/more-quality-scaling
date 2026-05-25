@@ -907,6 +907,8 @@ end
 -- night vision: maybe color tables??? (like that 3-tier night vision mod); otherwise energy consumption
 -- PLD: shooting speed and/or damage; maybe slight efficiency difference?
 -- discharge defense: speed and/or damage; maybe lower pushback distance (to allow more DPS)??
+--   maybe increase stun duration while decreasing pushback?
+
 
 
 
