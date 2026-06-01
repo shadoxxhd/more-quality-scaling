@@ -524,8 +524,12 @@ if settings.startup["mqs-electric-turret-changes"].value ~= "none" then
             if val == "speed" or val == "both" then
                 entity.attack_parameters.cooldown = entity.attack_parameters.cooldown / qvalue
                 if entity.energy_source.type == "electric" then
-                    entity.energy_source.buffer_capacity = entity.energy_source.buffer_capacity * qvalue
-                    entity.energy_source.input_flow_limit = entity.energy_source.input_flow_limit * qvalue
+                    if entity.energy_source.buffer_capacity then
+                        entity.energy_source.buffer_capacity = (util.parse_energy(entity.energy_source.buffer_capacity) * qvalue).."J"
+                    end
+                    if entity.energy_source.input_flow_limit then
+                        entity.energy_source.input_flow_limit = (util.parse_energy(entity.energy_source.input_flow_limit) * qvalue).."J"
+                    end
                 end
             end
             if val == "damage" or val == "both" then
