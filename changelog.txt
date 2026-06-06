@@ -8,6 +8,7 @@ Date: 2026-??-??
   Bugfixes:
     - Fixed issues with certain configurations of Adjustable Quality
     - Fixed some missing locale entries
+    - Fixed crash reported by OliGamer1702
 ---------------------------------------------------------------------------------------------------
 Version: 1.5.5
 Date: 2026-06-06
