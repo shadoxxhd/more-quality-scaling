@@ -5,6 +5,9 @@ Date: 2026-??-??
     - Added tooltips showing the correct values for different quality levels
     - Added entity blacklist setting, allowing users to exclude specific incompatible entities from the quality logic
     - Added optional scaling for fluid turrets (the previous update only added electric and ammo turrets)
+  Bugfixes:
+    - Fixed issues with certain configurations of Adjustable Quality
+    - Fixed some missing locale entries
 ---------------------------------------------------------------------------------------------------
 Version: 1.5.5
 Date: 2026-06-06
