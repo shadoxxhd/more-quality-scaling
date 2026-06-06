@@ -278,6 +278,7 @@ if settings.startup["mqs-rocket-changes"].value then
             local silo = table.deepcopy(original)
             defaultChanges(silo, qname)
 
+            if not silo.flags then silo.flags = {} end
             table.insert(silo.flags, "not-in-made-in")
 
             silo.door_opening_speed = silo.door_opening_speed * qvalue
