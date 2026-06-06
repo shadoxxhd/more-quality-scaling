@@ -393,7 +393,7 @@ script.on_init(function()
     qualities = {}
     for qn, q in pairs(prototypes.quality) do
       qualities[qn] = q
-      if not qname and q.level > 0 then
+      if not qname and qn ~= "normal" then
         qname = qn
       end
     end
@@ -403,7 +403,7 @@ script.on_load(function()
     qualities = {}
     for qn, q in pairs(prototypes.quality) do
       qualities[qn] = q
-      if not qname and q.level > 0 then
+      if not qname and qn ~= "normal" then
         qname = qn
       end
     end
