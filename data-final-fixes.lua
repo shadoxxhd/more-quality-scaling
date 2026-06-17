@@ -89,6 +89,7 @@ function defaultChanges(entity, qname)
     entity.localised_name = qualityInName and {"", "[quality="..qname.."]", {"entity-name."..name}} or {"entity-name."..name}
     entity.localised_description = {"entity-description."..name}
     entity.hidden_in_factoripedia = true
+    entity.hidden = settings.startup["mqs-entities-hidden"].value
     makePlacable(entity, qname, name)
     if(not modData[name]) then modData[name] = {} end
     table.insert(modData[name],entity.name)
@@ -814,6 +815,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
             entity.localised_name = {"entity-name."..name}
             entity.localised_description = {"entity-description."..name}
             entity.hidden_in_factoripedia = true
+            entity.hidden = settings.startup["mqs-entities-hidden"].value
             -- skip makePlacable
             if(not modData[name]) then modData[name] = {} end
             table.insert(modData[name],entity.name)
@@ -855,6 +857,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
             entity.localised_name = {"entity-name."..name}
             entity.localised_description = {"entity-description."..name}
             entity.hidden_in_factoripedia = true
+            entity.hidden = settings.startup["mqs-entities-hidden"].value
             -- skip makePlacable
             if(not modData[name]) then modData[name] = {} end
             table.insert(modData[name],entity.name)
