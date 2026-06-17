@@ -5,11 +5,13 @@ Date: 2026-??-??
     - Added tooltips showing the correct values for different quality levels
     - Added entity blacklist setting, allowing users to exclude specific incompatible entities from the quality logic
     - Added optional scaling for fluid turrets (the previous update only added electric and ammo turrets)
+    - Added option to hide entity variants from UIs - this cleans up some interfaces (like ore tooltips), but prevents selection of quality entities in upgrade/deconstruction planner configuration - the "Upgrade planner toggle entity with pipette" mod is recommended if you enable this
   Bugfixes:
     - Fixed issues with certain configurations of Adjustable Quality
     - Fixed some missing locale entries
     - Fixed crash reported by OliGamer1702
     - Added compatibility with "No Solid Fuel Vehicles"
+    - Entity variants are now actually hidden from Factoriopedia
 ---------------------------------------------------------------------------------------------------
 Version: 1.5.7
 Date: 2026-06-06
