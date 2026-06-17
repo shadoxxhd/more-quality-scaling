@@ -9,6 +9,12 @@ Date: 2026-??-??
     - Fixed issues with certain configurations of Adjustable Quality
     - Fixed some missing locale entries
     - Fixed crash reported by OliGamer1702
+    - Added compatibility with "No Solid Fuel Vehicles"
+---------------------------------------------------------------------------------------------------
+Version: 1.5.7
+Date: 2026-06-06
+  Bugfixes:
+    - Backported fix for a crash reported by OliGamer1702 from unreleased 1.6 branch
 ---------------------------------------------------------------------------------------------------
 Version: 1.5.5
 Date: 2026-06-06
