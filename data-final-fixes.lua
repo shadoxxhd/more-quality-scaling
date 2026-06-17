@@ -88,7 +88,7 @@ function defaultChanges(entity, qname)
     entity.subgroup = "mqs-qualitised-entities-sub"
     entity.localised_name = qualityInName and {"", "[quality="..qname.."]", {"entity-name."..name}} or {"entity-name."..name}
     entity.localised_description = {"entity-description."..name}
-    entity.hidden_in_factoripedia = true
+    entity.hidden_in_factoriopedia = true
     entity.hidden = settings.startup["mqs-entities-hidden"].value
     makePlacable(entity, qname, name)
     if(not modData[name]) then modData[name] = {} end
@@ -150,7 +150,7 @@ function addTooltip(original, derived, propName, normalValue, qual, qualValue)
             value = tostring(normalValue),
             quality_values = {normal = tostring(normalValue)},
             order = 40 + #tooltips[original.name],
-            show_in_factoripedia = true,
+            show_in_factoriopedia = true,
             show_in_tooltip = settings.startup["mqs-adjustments-in-tooltip"].value
         }
         if not original.custom_tooltip_fields then original.custom_tooltip_fields = {} end
@@ -814,7 +814,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
             entity.subgroup = "mqs-qualitised-entities-sub"
             entity.localised_name = {"entity-name."..name}
             entity.localised_description = {"entity-description."..name}
-            entity.hidden_in_factoripedia = true
+            entity.hidden_in_factoriopedia = true
             entity.hidden = settings.startup["mqs-entities-hidden"].value
             -- skip makePlacable
             if(not modData[name]) then modData[name] = {} end
@@ -856,7 +856,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
             entity.subgroup = "mqs-qualitised-entities-sub"
             entity.localised_name = {"entity-name."..name}
             entity.localised_description = {"entity-description."..name}
-            entity.hidden_in_factoripedia = true
+            entity.hidden_in_factoriopedia = true
             entity.hidden = settings.startup["mqs-entities-hidden"].value
             -- skip makePlacable
             if(not modData[name]) then modData[name] = {} end
