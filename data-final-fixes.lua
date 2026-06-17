@@ -386,8 +386,7 @@ if settings.startup["mqs-rocket-changes"].value then
             local silo = table.deepcopy(original)
             defaultChanges(silo, qname)
 
-            if not silo.flags then silo.flags = {} end
-            table.insert(silo.flags, "not-in-made-in")
+            addFlag(silo,"not-in-made-in")
 
             silo.door_opening_speed = silo.door_opening_speed * qvalue
             silo.light_blinking_speed = silo.light_blinking_speed * qvalue
@@ -467,7 +466,7 @@ if settings.startup["mqs-mining-drill-changes"].value ~= "none" then
             local entity = table.deepcopy(original)
             defaultChanges(entity, qname)
 
-            table.insert(entity.flags,"not-in-made-in")
+            addFlag(entity,"not-in-made-in")
 
             if settings.startup["mqs-mining-drill-changes"].value == "speed" or settings.startup["mqs-mining-drill-changes"].value == "both" then
                 entity.mining_speed = entity.mining_speed * qvalue
