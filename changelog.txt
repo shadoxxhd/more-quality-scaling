@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 1.6.0
-Date: 2026-??-??
+Date: 2026-06-21
   Features:
     - Added tooltips showing the correct values for different quality levels
     - Added entity blacklist setting, allowing users to exclude specific incompatible entities from the quality logic
@@ -12,6 +12,7 @@ Date: 2026-??-??
     - Fixed crash reported by OliGamer1702
     - Added compatibility with "No Solid Fuel Vehicles"
     - Entity variants are now actually hidden from Factoriopedia
+    - Added cargo ships and oil platforms to blacklist (the former threw an error on placeing them down, the latter did not generate its internal power pole and storage tank)
 ---------------------------------------------------------------------------------------------------
 Version: 1.5.7
 Date: 2026-06-06
