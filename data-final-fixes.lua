@@ -144,11 +144,13 @@ function addTooltip(original, derived, propName, normalValue, qual, qualValue)
     if not tooltips[original.name] then
         tooltips[original.name] = {}
     end
+    if type(normalValue) == "number" then normalValue = tostring(normalValue) end
+    if type(qualValue) == "number" then qualValue = tostring(qualValue) end
     if not tooltips[original.name][propName] then
         tooltips[original.name][propName] = {
             name = {propName},
-            value = tostring(normalValue),
-            quality_values = {normal = tostring(normalValue)},
+            value = normalValue,
+            quality_values = {normal = normalValue},
             order = 40 + #tooltips[original.name],
             show_in_factoriopedia = true,
             show_in_tooltip = settings.startup["mqs-adjustments-in-tooltip"].value
@@ -156,7 +158,7 @@ function addTooltip(original, derived, propName, normalValue, qual, qualValue)
         if not original.custom_tooltip_fields then original.custom_tooltip_fields = {} end
         table.insert(original.custom_tooltip_fields, tooltips[original.name][propName])
     end
-    tooltips[original.name][propName].quality_values[qual] = tostring(qualValue)
+    tooltips[original.name][propName].quality_values[qual] = qualValue
     derived.custom_tooltip_fields = original.custom_tooltip_fields
 end
 
@@ -176,7 +178,7 @@ function formatSI(value, unit, fstr)
 end
 
 -- only shows the given number of significant figures (e.g. 9.5k for 9500, or 12k for 11.7k, when sig=2)
-function formatSIB(value, unit, sig)
+function formatSIB(value, unit, sig, removeTrailingZeros)
     local prefixes = {"","k","M","G","T","P","E"}
     local index = 1
     while value >= 1000 and index < #prefixes do
@@ -187,9 +189,14 @@ function formatSIB(value, unit, sig)
     local f = 0
     while(value < 10^(sig-1-f)) do f = f+1 end
     if f == 0 then
-        return math.floor(value)..prefixes[index] .. unit
+        return math.floor(value) .. " " .. prefixes[index] .. unit
     else
-        return string.format("%."..f.."f", value) .. prefixes[index] .. unit
+        local s = string.format("%."..f.."f", value - 0.5 * 10^(-f))-- floor instead of round to maintain consistency with vanilla
+        if removeTrailingZeros then
+            --s = s:gsub("(%.0)?0+([kMGTPE]?)", "%1%2")
+            s = s:gsub("(%.0?)0?0?([kMGTPE]?)", "%1%2"))
+        end
+        return s .. " " .. prefixes[index] .. unit
     end
 end
 
@@ -266,7 +273,7 @@ if wagonChanges == "full" then
             --wagon.braking_power = nil -- prevent duplicate entries if mods use _power over _force
             brakingChanges(wagon, qvalue)
             -- what's the correct unit for the speed?? apparently meter per tick
-            addTooltipB(original, wagon, "max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6*10)/10)} end)
+            addTooltipB(original, wagon, "max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6))} end)
     
             table.insert(new, wagon)
         end
@@ -281,7 +288,7 @@ if wagonChanges == "full" then
             wagon.quality_affects_capacity = true
             wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude)
             brakingChanges(wagon, qvalue)
-            addTooltipB(original, wagon, "max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6*10)/10)} end)
+            addTooltipB(original, wagon, "max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6))} end)
     
             table.insert(new, wagon)
         end
@@ -294,7 +301,7 @@ if wagonChanges == "full" then
     
             wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude)
             brakingChanges(wagon, qvalue)
-            addTooltipB(original, wagon, "max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6*10)/10)} end)
+            addTooltipB(original, wagon, "max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6))} end)
     
             table.insert(new, wagon)
         end
@@ -355,8 +362,8 @@ if settings.startup["mqs-locomotive-changes"].value then
             train.max_speed = train.max_speed * (1 + (qvalue-1) * speed_magnitude)
             --train.max_power = tostring(600 * qvalue) .. "kW"
             train.max_power = (util.parse_energy(train.max_power) * qvalue).."J"
-            addTooltipB(original, train, "description.max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6*10)/10)} end)
-            addTooltipB(original, train, "description.acceleration-power", qname, function(e) return formatSI(util.parse_energy(e.max_power)*60,"W") end)
+            addTooltipB(original, train, "description.max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6))} end)
+            addTooltipB(original, train, "description.acceleration-power", qname, function(e) return formatSIB(util.parse_energy(e.max_power)*60,"W",3,true) end)
             if train.energy_source.type == "burner" and fuelUse ~= "linear" then
                 if fuelUse == "constant" then
                     train.energy_source.effectivity = (train.energy_source.effectivity or 1) * qvalue
