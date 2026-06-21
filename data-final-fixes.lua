@@ -265,8 +265,8 @@ if wagonChanges == "full" then
             --wagon.braking_force = (wagon.braking_force or wagon.braking_power) * qvalue
             --wagon.braking_power = nil -- prevent duplicate entries if mods use _power over _force
             brakingChanges(wagon, qvalue)
-            -- what's the correct unit for the speed?? TODO for all wagon types
-            --addTooltip(original, wagon, "max-speed", {"si-unit-kilometer-per-hour", tostring(math.floor(original.max_speed))}, ...
+            -- what's the correct unit for the speed?? apparently meter per tick
+            addTooltipB(original, wagon, "max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6*10)/10)} end)
     
             table.insert(new, wagon)
         end
@@ -281,6 +281,7 @@ if wagonChanges == "full" then
             wagon.quality_affects_capacity = true
             wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude)
             brakingChanges(wagon, qvalue)
+            addTooltipB(original, wagon, "max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6*10)/10)} end)
     
             table.insert(new, wagon)
         end
@@ -293,6 +294,7 @@ if wagonChanges == "full" then
     
             wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude)
             brakingChanges(wagon, qvalue)
+            addTooltipB(original, wagon, "max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6*10)/10)} end)
     
             table.insert(new, wagon)
         end
@@ -353,8 +355,7 @@ if settings.startup["mqs-locomotive-changes"].value then
             train.max_speed = train.max_speed * (1 + (qvalue-1) * speed_magnitude)
             --train.max_power = tostring(600 * qvalue) .. "kW"
             train.max_power = (util.parse_energy(train.max_power) * qvalue).."J"
-            -- TODO: figure out correct unit for vehicle speed
-            --addTooltipB(original, train, "description.max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed))} end)
+            addTooltipB(original, train, "description.max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6*10)/10)} end)
             addTooltipB(original, train, "description.acceleration-power", qname, function(e) return formatSI(util.parse_energy(e.max_power)*60,"W") end)
             if train.energy_source.type == "burner" and fuelUse ~= "linear" then
                 if fuelUse == "constant" then
@@ -418,7 +419,6 @@ end
 if settings.startup["mqs-roboport-changes"].value ~= "none" then
     local val = settings.startup["mqs-roboport-changes"].value
     if val == "speed" or val == "both" then
-        -- todo: add option for range scaling
         for _, roboport in pairs(getEntities("roboport")) do
           roboport.charging_station_count_affected_by_quality = true
         end
@@ -664,7 +664,6 @@ if settings.startup["mqs-electric-turret-changes"].value ~= "none" then
                 entity.attack_parameters.damage_modifier = (entity.attack_parameters.damage_modifier or 1) * qvalue
                 addTooltipB(original, entity, "description.damage-bonus", qname, function(e) return {"format-percent",tostring(math.floor((e.attack_parameters.damage_modifier-1)*100))} end)
             end
-            -- todo: tooltip?
 
             table.insert(new, entity)
         end
@@ -691,7 +690,6 @@ if settings.startup["mqs-ammo-turret-changes"].value ~= "none" then
                 entity.attack_parameters.damage_modifier = (entity.attack_parameters.damage_modifier or 1) * qvalue
                 addTooltipB(original, entity, "description.damage-bonus", qname, function(e) return {"format-percent",tostring(math.floor((e.attack_parameters.damage_modifier-1)*100))} end)
             end
-            -- todo: tooltip?
 
             table.insert(new, entity)
         end
@@ -718,7 +716,6 @@ if settings.startup["mqs-fluid-turret-changes"].value ~= "none" then
                 entity.attack_parameters.damage_modifier = (entity.attack_parameters.damage_modifier or 1) * qvalue
                 addTooltipB(original, entity, "description.damage-bonus", qname, function(e) return {"format-percent",tostring(math.floor((e.attack_parameters.damage_modifier-1)*100))} end)
             end
-            -- todo: tooltip?
 
             table.insert(new, entity)
         end
@@ -899,7 +896,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
 end
 
 -- SECTION items
--- very WIP - need new control code to replace items when eqipped on player (weapons, hand items) or grid
+-- very early WIP - need new control code to replace items when eqipped on player (weapons, hand items) or grid
 
 -- weapons: shooting speed and/or damage factor
 -- ammo: probably unchanged (damage scaling already works fine; AoE scaling probably overkill and would be inconsistent vs. turrets)
@@ -918,12 +915,12 @@ end
 
 -- general TODO
 -- - quality belt drag-placing (works ok-ish for now)
--- - underground indicators
--- - correct underground connections (copy&paste works correctly, manual placement sometimes doesn't)
+-- - underground indicators (maybe modify/cooperate with underground indicator mod? otherwise this would need cursor replacement)
+-- - correct underground connections (copy&paste works correctly, manual placement sometimes doesn't. it will self-correct, but by then some items might be on the wrong belt)
 --   - maybe place blueprint/special item in cursor via hotkey?? eg. double-q on same underground replaces item-in-hand with blueprint-in-hand?
 -- - mining drill area preview (also allow easy placement at edge of deposit! (requires either new items (replacement in hand) or item-to-blueprint))
--- - add custom_tooltip_field for scaling properties (probably make show_in_tooltip depend on setting?)
---   - check how custom_tooltip_field looks for a) base entities b) all entities c) base item
+-- - add custom_tooltip_field for scaling properties (probably make show_in_tooltip depend on setting?) (DONE)
+--   - check how custom_tooltip_field looks for a) base entities b) all entities c) base item (since it should be shown for quality entities, all entities is the only consistent choice for tooltips; factoriopedia would allow for either)
 
 -- research
 -- - factoriopedia_alternative
