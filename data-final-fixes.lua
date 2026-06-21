@@ -482,7 +482,7 @@ if settings.startup["mqs-mining-drill-changes"].value ~= "none" then
             if settings.startup["mqs-mining-drill-changes"].value == "speed" or settings.startup["mqs-mining-drill-changes"].value == "both" then
                 entity.mining_speed = entity.mining_speed * qvalue
                 --addTooltip(original, entity, "description.mining-speed", (math.floor(original.mining_speed*10)/10).."/s", qname, (math.floor(entity.mining_speed*10)/10).."/s")
-                addTooltipB(original, entity, "description.mining-speed", qname, function(e) return (math.floor(e.mining_speed*10)/10).."/s" end)
+                addTooltipB(original, entity, "description.mining-speed", qname, function(e) return (math.floor(e.mining_speed*100)/100).."/s" end)
             end
             if settings.startup["mqs-mining-drill-changes"].value == "area" or settings.startup["mqs-mining-drill-changes"].value == "both" then
                 entity.resource_searching_radius = entity.resource_searching_radius + math.floor((entity.resource_searching_radius+1)*data.raw.quality[qname].level*0.15)
