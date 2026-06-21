@@ -166,7 +166,7 @@ function addTooltipB(original, derived, propName, qual, valueFunc)
     addTooltip(original, derived, propName, valueFunc(original), qual, valueFunc(derived))
 end
 
-function formatSI(value, unit, fstr)
+function formatSI(value, unit, fstr) -- currently no longer used
     local prefixes = {"","k","M","G","T","P","E"}
     local index = 1
     if fstr == nil then fstr = "%.2f" end
@@ -178,7 +178,7 @@ function formatSI(value, unit, fstr)
 end
 
 -- only shows the given number of significant figures (e.g. 9.5k for 9500, or 12k for 11.7k, when sig=2)
-function formatSIB(value, unit, sig, removeTrailingZeros)
+function formatSIB(value, unit, sig, removeTrailingZeros, space)
     local prefixes = {"","k","M","G","T","P","E"}
     local index = 1
     while value >= 1000 and index < #prefixes do
@@ -186,17 +186,20 @@ function formatSIB(value, unit, sig, removeTrailingZeros)
         index = index + 1
     end
     if sig == nil then sig = 2 end
+    if space == nil then space = " " end
     local f = 0
     while(value < 10^(sig-1-f)) do f = f+1 end
     if f == 0 then
-        return math.floor(value) .. " " .. prefixes[index] .. unit
+        return math.floor(value) .. space .. prefixes[index] .. unit
     else
         local s = string.format("%."..f.."f", value - 0.5 * 10^(-f))-- floor instead of round to maintain consistency with vanilla
         if removeTrailingZeros then
-            --s = s:gsub("(%.0)?0+([kMGTPE]?)", "%1%2")
-            s = s:gsub("(%.0?)0?0?([kMGTPE]?)", "%1%2"))
+            -- remove as many trailing zeros as possible, but always keep the decimal point and the first digit after it
+            -- this matches vanilla behavior (for acceleration units, at least - 1.14 MW, 1.5 MW, 4.21 MW, 600 kW, 10.0 MW are all vanilla-formatted accelerations)
+            s = s:gsub("([1-9])0+$", "%1")
+            s = s:gsub("(.0)0+$", "%1")
         end
-        return s .. " " .. prefixes[index] .. unit
+        return s .. space .. prefixes[index] .. unit
     end
 end
 
@@ -344,7 +347,7 @@ if settings.startup["mqs-storage-tank-changes"].value then
     
             tank.fluid_box.volume = tank.fluid_box.volume * qvalue
 
-            addTooltipB(original, tank, "description.fluid-capacity", qname, function(e) return formatSIB(e.fluid_box.volume,"") end)
+            addTooltipB(original, tank, "description.fluid-capacity", qname, function(e) return formatSIB(e.fluid_box.volume,"",2,nil,"") end)
     
             table.insert(new, tank)
         until true; end
