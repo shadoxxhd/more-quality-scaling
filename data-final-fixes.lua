@@ -377,7 +377,7 @@ if settings.startup["mqs-locomotive-changes"].value then
                 elseif fuelUse == "qspeed" then
                     train.energy_source.effectivity = (train.energy_source.effectivity or 1) * qvalue / (1 + (qvalue-1) * speed_magnitude)^2
                 end
-                addTooltip(original, train, "description.effectivity", math.floor((original.energy_source.effectivity or 1)*100).."%", qname, math.floor(train.energy_source.effectivity*100).."%")
+                addTooltip(original, train, "description.effectivity", math.floor((original.energy_source.effectivity or 1)*100).."%", qname, math.floor((train.energy_source.effectivity or 1)*100).."%")
             end
             brakingChanges(train, qvalue)
 
@@ -639,7 +639,7 @@ if settings.startup["mqs-platform-hub-changes"].value then
             end
             entity.platform_repair_speed_modifier = (entity.platform_repair_speed_modifier or 1) * qvalue
             addTooltipB(original, entity, "description.storage", qname, function(e) return tostring(e.inventory_size) end)
-            addTooltipB(original, entity, "description.mqs-repair-speed", qname, function(e) return tostring(e.platform_repair_speed_modifier) end)
+            addTooltipB(original, entity, "description.mqs-repair-speed", qname, function(e) return tostring((e.platform_repair_speed_modifier or 1)) end)
 
             table.insert(new, entity)
         end
@@ -672,7 +672,7 @@ if settings.startup["mqs-electric-turret-changes"].value ~= "none" then
             end
             if val == "damage" or val == "both" then
                 entity.attack_parameters.damage_modifier = (entity.attack_parameters.damage_modifier or 1) * qvalue
-                addTooltipB(original, entity, "description.damage-bonus", qname, function(e) return {"format-percent",tostring(math.floor((e.attack_parameters.damage_modifier-1)*100))} end)
+                addTooltipB(original, entity, "description.damage-bonus", qname, function(e) return {"format-percent",tostring(math.floor(((e.attack_parameters.damage_modifier or 1)-1)*100))} end)
             end
 
             table.insert(new, entity)
@@ -698,7 +698,7 @@ if settings.startup["mqs-ammo-turret-changes"].value ~= "none" then
             end
             if val == "damage" or val == "both" then
                 entity.attack_parameters.damage_modifier = (entity.attack_parameters.damage_modifier or 1) * qvalue
-                addTooltipB(original, entity, "description.damage-bonus", qname, function(e) return {"format-percent",tostring(math.floor((e.attack_parameters.damage_modifier-1)*100))} end)
+                addTooltipB(original, entity, "description.damage-bonus", qname, function(e) return {"format-percent",tostring(math.floor(((e.attack_parameters.damage_modifier or 1)-1)*100))} end)
             end
 
             table.insert(new, entity)
@@ -724,7 +724,7 @@ if settings.startup["mqs-fluid-turret-changes"].value ~= "none" then
             end
             if val == "damage" or val == "both" then
                 entity.attack_parameters.damage_modifier = (entity.attack_parameters.damage_modifier or 1) * qvalue
-                addTooltipB(original, entity, "description.damage-bonus", qname, function(e) return {"format-percent",tostring(math.floor((e.attack_parameters.damage_modifier-1)*100))} end)
+                addTooltipB(original, entity, "description.damage-bonus", qname, function(e) return {"format-percent",tostring(math.floor(((e.attack_parameters.damage_modifier or 1)-1)*100))} end)
             end
 
             table.insert(new, entity)
