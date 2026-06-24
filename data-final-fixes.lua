@@ -276,7 +276,7 @@ if wagonChanges == "full" then
             --wagon.braking_power = nil -- prevent duplicate entries if mods use _power over _force
             brakingChanges(wagon, qvalue)
             -- what's the correct unit for the speed?? apparently meter per tick
-            addTooltipB(original, wagon, "max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6))} end)
+            addTooltipB(original, wagon, "description.max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6))} end)
     
             table.insert(new, wagon)
         end
@@ -291,7 +291,7 @@ if wagonChanges == "full" then
             wagon.quality_affects_capacity = true
             wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude)
             brakingChanges(wagon, qvalue)
-            addTooltipB(original, wagon, "max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6))} end)
+            addTooltipB(original, wagon, "description.max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6))} end)
     
             table.insert(new, wagon)
         end
@@ -304,7 +304,7 @@ if wagonChanges == "full" then
     
             wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude)
             brakingChanges(wagon, qvalue)
-            addTooltipB(original, wagon, "max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6))} end)
+            addTooltipB(original, wagon, "description.max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6))} end)
     
             table.insert(new, wagon)
         end
@@ -439,7 +439,7 @@ if settings.startup["mqs-roboport-changes"].value ~= "none" then
     end
     if val == "range" or val == "both" then
         local function formatArea(range)
-            local x = 2*math.floor(range)
+            local x = math.floor(2*range)
             return x.."x"..x
         end
         local new = {}
@@ -455,9 +455,9 @@ if settings.startup["mqs-roboport-changes"].value ~= "none" then
                     entity.logistics_connection_distance = entity.logistics_connection_distance * qvalue
                 end
                 --addTooltip(original, entity, "supply-area", formatArea(original.logistics_radius), qname, formatArea(entity.logistic_radius))
-                addTooltipB(original, entity, "supply-area", qname, function(e) return formatArea(e.logistics_radius) end)
+                addTooltipB(original, entity, "description.supply-area", qname, function(e) return formatArea(e.logistics_radius) end)
                 --addTooltip(original, entity, "construction-area", formatArea(original.construction_radius), qname, formatArea(entity.construction_radius))
-                addTooltipB(original, entity, "construction-area", qname, function(e) return formatArea(e.construction_radius) end)
+                addTooltipB(original, entity, "description.construction-area", qname, function(e) return formatArea(e.construction_radius) end)
 
                 table.insert(new, entity)
             end
@@ -750,7 +750,7 @@ if settings.startup["mqs-belt-changes"].value then
                     entity.related_underground_belt = qname.."-"..entity.related_underground_belt
                 end
 
-                addTooltipB(original, entity, "description.belt-speed", qname, function(e) return {"",tostring(e.speed),"belt-items","per-second-suffix"} end)
+                addTooltipB(original, entity, "description.belt-speed", qname, function(e) return {"",tostring(e.speed),{"belt-items"},{"per-second-suffix"}} end)
     
                 table.insert(new, entity)
             end
