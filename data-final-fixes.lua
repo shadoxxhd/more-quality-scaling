@@ -843,7 +843,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
             local entity = table.deepcopy(original)
             entity.name = qname.."-"..name
             entity.subgroup = "mqs-qualitised-entities-sub"
-            entity.localised_name = {"entity-name."..name}
+            entity.localised_name = qualityInName and {"", "[quality="..qname.."]", {"entity-name."..name}} or {"entity-name."..name}
             entity.localised_description = {"entity-description."..name}
             entity.hidden_in_factoriopedia = true
             entity.hidden = settings.startup["mqs-entities-hidden"].value
@@ -873,6 +873,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
             if iname then
                 local item = table.deepcopy(data.raw.item[iname])
                 item.name = qname.."-"..name
+                item.localised_name = qualityInName and {"", "[quality="..qname.."]", {"item-name."..name}} or {"item-name."..name}
                 item.place_result = entity.name
                 item.subgroup = "mqs-qualitised-entities-sub"
                 table.insert(new, item)
@@ -885,7 +886,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
             
             entity.name = qname.."-"..name
             entity.subgroup = "mqs-qualitised-entities-sub"
-            entity.localised_name = {"entity-name."..name}
+            entity.localised_name = qualityInName and {"", "[quality="..qname.."]", {"entity-name."..name}} or {"entity-name."..name}
             entity.localised_description = {"entity-description."..name}
             entity.hidden_in_factoriopedia = true
             entity.hidden = settings.startup["mqs-entities-hidden"].value
@@ -915,6 +916,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
             if iname then
                 local item = table.deepcopy(data.raw.item[iname])
                 item.name = qname.."-"..name
+                item.localised_name = qualityInName and {"", "[quality="..qname.."]", {"item-name."..name}} or {"item-name."..name}
                 item.place_result = entity.name
                 item.subgroup = "mqs-qualitised-entities-sub"
                 table.insert(new, item)
