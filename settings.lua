@@ -11,18 +11,18 @@ data:extend({
 	--	setting_type = "startup",
 	--	default_value = true
 	--},
-	{
-		type = "bool-setting",
-		name = "mqs-storage-tank-changes",
-		setting_type = "startup",
-		default_value = true,
-		order = "a"
-	},
+	--{
+	--	type = "bool-setting",
+	--	name = "mqs-storage-tank-changes",
+	--	setting_type = "startup",
+	--	default_value = true,
+	--	order = "a"
+	--},
 	{
 		type = "bool-setting",
 		name = "mqs-locomotive-changes",
 		setting_type = "startup",
-		default_value = true,
+		default_value = false,
 		order = "b"
 	},
 	--{

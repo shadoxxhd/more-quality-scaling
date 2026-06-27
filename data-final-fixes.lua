@@ -261,6 +261,10 @@ for str in settings.startup["mqs-blacklist"].value:gmatch("([^,]+)") do
     cloneBlacklist[str] = true
 end
 
+-- full: only braking changes need prototype replacement in 2.1, so should probably make a setting for that specifically
+-- compat/simple: allow selection between "all max speed" (quality would only help capacity, and maybe breaking) and "quality_effects_max_speed"
+-- important: if speed is actually averaged between wagons and locomotive, all_max_speed would actually cause strange behavior for non-max-quality locomotives
+-- maybe add weight scaling?
 if wagonChanges == "full" then
     local new = {}
     for qname, qvalue in pairs(qualities) do
@@ -271,12 +275,14 @@ if wagonChanges == "full" then
             
             --wagon.inventory_size = wagon.inventory_size * qvalue
             wagon.quality_affects_inventory_size = true
-            wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude) -- quality level differences are equivalent to RF quality differences - 4.5% per level. 
+            if wagon.max_speed then
+                wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude) -- quality level differences are equivalent to RF quality differences - 4.5% per level. 
+                -- what's the correct unit for the speed?? apparently meter per tick
+                addTooltipB(original, wagon, "description.max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6))} end)
+            end
             --wagon.braking_force = (wagon.braking_force or wagon.braking_power) * qvalue
             --wagon.braking_power = nil -- prevent duplicate entries if mods use _power over _force
             brakingChanges(wagon, qvalue)
-            -- what's the correct unit for the speed?? apparently meter per tick
-            addTooltipB(original, wagon, "description.max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6))} end)
     
             table.insert(new, wagon)
         end
@@ -289,9 +295,12 @@ if wagonChanges == "full" then
     
             --wagon.capacity = wagon.capacity * qvalue
             wagon.quality_affects_capacity = true
-            wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude)
+            if wagon.max_speed then
+                wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude)
+                addTooltipB(original, wagon, "description.max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6))} end)
+            end
             brakingChanges(wagon, qvalue)
-            addTooltipB(original, wagon, "description.max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6))} end)
+            
     
             table.insert(new, wagon)
         end
@@ -301,10 +310,13 @@ if wagonChanges == "full" then
             original.quality_affects_inventory_size = true
             local wagon = table.deepcopy(original)
             defaultChanges(wagon, qname)
-    
-            wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude)
+            
+            if wagon.max_speed then
+                wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude)
+                addTooltipB(original, wagon, "description.max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6))} end)
+            end
             brakingChanges(wagon, qvalue)
-            addTooltipB(original, wagon, "description.max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6))} end)
+            
     
             table.insert(new, wagon)
         end
@@ -322,39 +334,48 @@ else
         if wagonChanges == "simple" then
             original.quality_affects_inventory_size = true
         end
-        original.max_speed = original.max_speed * speedFactor
+        if original.max_speed then
+            original.max_speed = original.max_speed * speedFactor
+        end
     end
     for name, original in pairs(getEntities("fluid-wagon")) do
         if wagonChanges == "simple" then
             original.quality_affects_capacity = true
         end
-        original.max_speed = original.max_speed * speedFactor
+        if original.max_speed then
+            original.max_speed = original.max_speed * speedFactor
+        end
     end
     for name, original in pairs(getEntities("artillery-wagon")) do
-        original.max_speed = original.max_speed * speedFactor
+        if original.max_speed then
+            original.max_speed = original.max_speed * speedFactor
+        end
     end
 end
+-- vanilla now
+--if settings.startup["mqs-storage-tank-changes"].value then
+--    local new = {}
+--    for qname, qvalue in pairs(qualities) do
+--        for name, original in pairs(getEntities("storage-tank")) do repeat -- necessary for "break" to work as "continue"
+--            if name:match("^factory%-connection%-indicator%-") or name:match("^factory%-[1-3]$") then
+--                break
+--            end
+--            local tank = table.deepcopy(original)
+--            defaultChanges(tank, qname)
+--    
+--            tank.fluid_box.volume = tank.fluid_box.volume * qvalue
+--
+--            addTooltipB(original, tank, "description.fluid-capacity", qname, function(e) return formatSIB(e.fluid_box.volume,"",2,nil,true,"") end)
+--    
+--            table.insert(new, tank)
+--        until true; end
+--    end
+--    if next(new) then data:extend(new) end
+--end
 
-if settings.startup["mqs-storage-tank-changes"].value then
-    local new = {}
-    for qname, qvalue in pairs(qualities) do
-        for name, original in pairs(getEntities("storage-tank")) do repeat -- necessary for "break" to work as "continue"
-            if name:match("^factory%-connection%-indicator%-") or name:match("^factory%-[1-3]$") then
-                break
-            end
-            local tank = table.deepcopy(original)
-            defaultChanges(tank, qname)
-    
-            tank.fluid_box.volume = tank.fluid_box.volume * qvalue
-
-            addTooltipB(original, tank, "description.fluid-capacity", qname, function(e) return formatSIB(e.fluid_box.volume,"",2,nil,true,"") end)
-    
-            table.insert(new, tank)
-        until true; end
-    end
-    if next(new) then data:extend(new) end
-end
-
+-- power and speed scaling are vanilla now
+-- -> configure quality values
+-- -> make entities only for breaking, efficiency
 if settings.startup["mqs-locomotive-changes"].value then
     local new = {}
     for qname, qvalue in pairs(qualities) do
@@ -390,6 +411,7 @@ if settings.startup["mqs-locomotive-changes"].value then
     if next(new) then data:extend(new) end
 end
 
+-- partially vanilla
 if settings.startup["mqs-rocket-changes"].value then
     -- todo: maybe add option for scaling intensity?
     local new = {}
@@ -400,11 +422,11 @@ if settings.startup["mqs-rocket-changes"].value then
 
             addFlag(silo,"not-in-made-in")
 
-            silo.door_opening_speed = silo.door_opening_speed * qvalue
+            silo.door_opening_speed = silo.door_opening_speed * qvalue -- todo: is this the "arms_speed_modifier_per_quality_level" parameter?
             silo.light_blinking_speed = silo.light_blinking_speed * qvalue
 
-            silo.rocket_rising_delay = math.ceil((silo.rocket_rising_delay or 30) / qvalue)
-            silo.launch_wait_time = math.ceil((silo.launch_wait_time or 120) / qvalue)
+            silo.rocket_rising_delay = math.ceil((silo.rocket_rising_delay or 30) / qvalue) -- todo: switch to vanilla parameter (rocket_rising_speed_modifier_per_quality_level)
+            silo.launch_wait_time = math.ceil((silo.launch_wait_time or 120) / qvalue) -- todo: switch to vanilla parameter (rocket_engine_starting_speed_modifier_per_quality_level)
             addTooltip(original, silo, "description.mqs-mechanical-speed-factor", 1, qname, qvalue)
 
             local rocket = table.deepcopy(data.raw["rocket-silo-rocket"][silo.rocket_entity])
@@ -427,6 +449,7 @@ if settings.startup["mqs-rocket-changes"].value then
 end
 
 if settings.startup["mqs-roboport-changes"].value ~= "none" then
+    -- TODO: evaluate RadiusVisualisationSpecification for drawing quality-specific area graphics
     local val = settings.startup["mqs-roboport-changes"].value
     if val == "speed" or val == "both" then
         for _, roboport in pairs(getEntities("roboport")) do
@@ -468,6 +491,7 @@ if settings.startup["mqs-roboport-changes"].value ~= "none" then
 end
 
 if settings.startup["mqs-mining-drill-changes"].value ~= "none" then
+    -- TODO: perhaps change radius to use quality_affects_mining_radius/QualityPrototype::mining_drill_mining_radius_bonus? would result in different range scaling (offset instead of scalar)...
     local new = {}
     for name, original in pairs(getEntities("mining-drill")) do
         --if not original.fast_replaceable_group then
