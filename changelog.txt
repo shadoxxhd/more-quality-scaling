@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.6.3
+Date: 2026-06-29
+  Features:
+    - Pipe weaving option: underground pipes of different qualities no longer connect to each other, allowing weaving (above-ground pipes still connect as normal)
+  Changes:
+    - Underground length scaling is now proportional to base length, instead of being a static +1 per level
+---------------------------------------------------------------------------------------------------
 Version: 1.6.2
 Date: 2026-06-24
   Bugfixes:

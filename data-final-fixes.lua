@@ -772,7 +772,7 @@ if settings.startup["mqs-belt-changes"].value or settings.startup["mqs-undergrou
                 addTooltipB(original, ubelt, "description.belt-speed", qname, function(e) return {"",tostring(e.speed),"belt-items","per-second-suffix"} end)
             end
             if settings.startup["mqs-underground-changes"].value then
-                ubelt.max_distance = math.min(ubelt.max_distance + data.raw.quality[qname].level,255)
+                ubelt.max_distance = math.min(math.floor(ubelt.max_distance * qvalue),255)
                 addTooltipB(original, ubelt, "description.maximum-length", qname, function(e) return tostring(e.max_distance) end)
             end
 
@@ -782,27 +782,38 @@ if settings.startup["mqs-belt-changes"].value or settings.startup["mqs-undergrou
     if next(new) then data:extend(new) end
 end
 
-if settings.startup["mqs-underground-changes"].value then
+if settings.startup["mqs-underground-changes"].value or settings.startup["mqs-pipe-weaving"].value then
     local new = {}
     for qname, qvalue in pairs(qualities) do
         for name, original in pairs(getEntities("pipe-to-ground")) do
             local entity = table.deepcopy(original)
 
-            defaultChanges(entity, qname)
-
             local changed = false
 
             local oldMax = 0
             local pc = entity.fluid_box.pipe_connections
-            for i,j in pairs(pc) do
+            for i,j in pairs(pc or {}) do
+                -- 30% per level -> +3 for vanilla undergrounds
                 if j.max_underground_distance and j.max_underground_distance < 255 then
                     oldMax = j.max_underground_distance
-                    j.max_underground_distance = math.min(j.max_underground_distance + data.raw.quality[qname].level,255)
+                    --j.max_underground_distance = math.min(j.max_underground_distance + data.raw.quality[qname].level,255)
+                    j.max_underground_distance = math.min(math.floor(j.max_underground_distance * qvalue),255)
+                    changed = true
+                end
+                if settings.startup["mqs-pipe-weaving"].value and j.connection_type == "underground" then
+                    if type(j.connection_category) == "string" then
+                        j.connection_category = qname.."-"..j.connection_category
+                    else
+                        for k,_ in pairs(j.connection_category or {}) do
+                            j.connection_category[k] = qname.."-"..j.connection_category[k]
+                        end
+                    end
                     changed = true
                 end
             end
 
             if changed then
+                defaultChanges(entity, qname)
                 addTooltip(original, entity, "description.maximum-length", tostring(oldMax), qname, tostring(math.min(oldMax + data.raw.quality[qname].level,255)))
                 table.insert(new, entity)
             end
