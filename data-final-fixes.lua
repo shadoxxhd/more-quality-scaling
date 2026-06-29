@@ -836,6 +836,8 @@ if settings.startup["mqs-underground-changes"].value then
 end
 
 -- SECTION robot changes
+-- todo: add tooltips, perhaps including "(not activated)" warning on the original item for qualities >normal
+-- todo: when runtime spoilage library is installed, add "priming" recipe/item that spoils into the correct quality variant
 if settings.startup["mqs-robot-changes"].value ~= "none" then
     local new = {}
     for qname, qvalue in pairs(qualities) do
