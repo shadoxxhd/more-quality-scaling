@@ -1,49 +1,25 @@
 data:extend({
-	--{
-	--	type = "bool-setting",
-	--	name = "mqs-cargo-wagon-changes",
-	--	setting_type = "startup",
-	--	default_value = true
-	--},
-	--{
-	--	type = "bool-setting",
-	--	name = "mqs-fluid-wagon-changes",
-	--	setting_type = "startup",
-	--	default_value = true
-	--},
-	--{
-	--	type = "bool-setting",
-	--	name = "mqs-storage-tank-changes",
-	--	setting_type = "startup",
-	--	default_value = true,
-	--	order = "a"
-	--},
 	{
-		type = "bool-setting",
+		type = "string-setting",
 		name = "mqs-locomotive-changes",
 		setting_type = "startup",
-		default_value = false,
+		default_value = "hybrid",
+		allowed_values = {"none","tweak","hybrid"}, --"old"
 		order = "b"
 	},
-	--{
-	--	type = "bool-setting",
-	--	name = "mqs-artillery-wagon-changes",
-	--	setting_type = "startup",
-	--	default_value = true
-	--},
 	{
 		type = "string-setting",
 		name = "mqs-fuel-consumption",
 		setting_type = "startup",
-		default_value = "constant",
-		allowed_values = {"inverse", "constant", "speed", "linear", "qspeed"},
+		default_value = "linear",
+		allowed_values = {"inverse", "constant", "speed", "qspeed", "linear"},
 		order = "c"
 	},
 	{
 		type = "string-setting",
 		name = "mqs-speed-magnitude",
 		setting_type = "startup",
-		default_value = "0.25",
+		default_value = "0.15",
 		allowed_values = {"0", "0.05", "0.1", "0.15", "0.25", "0.4", "0.7", "1.0"},
 		order = "d"
 	},
@@ -52,7 +28,7 @@ data:extend({
 		name = "mqs-wagon-changes",
 		setting_type = "startup",
 		default_value = "full",
-		allowed_values = {"compat", "simple", "full"},
+		allowed_values = {"none", "simple", "full"},
 		order = "e"
 	},
 	{

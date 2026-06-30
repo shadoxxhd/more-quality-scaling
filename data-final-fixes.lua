@@ -6,13 +6,20 @@
 }]]
 local reference = require("entity-reference")[mods["space-age"] and "spage" or "vanilla"]
 
+--------
+--- SECTION init
+--- 
+
+local maxLevel = 0
 local qualities = {}
 for name, qual in pairs(data.raw.quality) do
     if name ~= "quality-unknown" and name ~= "normal" then
         qualities[name] = qual.default_multiplier or (1 + qual.level * 0.3) -- respect changes to level progression
+        if qual.level > maxLevel then maxLevel = qual.level end
         -- TODO: implement mod data system to let quality mods change specific scaling
     end
 end
+local qualLen = math.floor(math.log(maxLevel,10)) + 1
 
 local speed_magnitude = settings.startup["mqs-speed-magnitude"].value + 0
 --local efficiency = settings.startup["mqs-efficiency"].value
@@ -31,8 +38,17 @@ local cloneBlacklist = (data.raw["mod-data"]["clone-blacklist"] or {data={}}).da
 local itemLookup = {}
 local tooltips = {}
 
+-- parse blacklist setting
+for str in settings.startup["mqs-blacklist"].value:gmatch("([^,]+)") do
+    cloneBlacklist[str] = true
+end
+
+--------
+--- SECTION functions
+--- 
+
 -- if no placeable_by entry exists and the item has a different name, special handling might be necessary
-function makePlacable(entity, qname, basename)
+local function makePlacable(entity, qname, basename)
     if entity.placeable_by then
         if entity.placeable_by.item then
             entity.placeable_by.quality = qname
@@ -81,8 +97,7 @@ function makePlacable(entity, qname, basename)
     --log("MQS: "..entity.name..": "..serpent.line(entity.placeable_by))
 end
 
-
-function defaultChanges(entity, qname)
+local function defaultChanges(entity, qname)
     local name = entity.name
     entity.name = qname .. "-" .. name
     entity.subgroup = "mqs-qualitised-entities-sub"
@@ -93,9 +108,10 @@ function defaultChanges(entity, qname)
     makePlacable(entity, qname, name)
     if(not modData[name]) then modData[name] = {} end
     table.insert(modData[name],entity.name)
+    entity.order = (entity.order or name):sub(1,199-qualLen).."-"..string.format("%0"..qualLen.."i",data.raw.quality[qname].level)
 end
 
-function addFlag(entity, flag)
+local function addFlag(entity, flag)
     if not entity.flags then
         entity.flags = {flag}
     else
@@ -104,7 +120,7 @@ function addFlag(entity, flag)
 end
 
 -- AI code
-function multiplyEnergy(energy, qvalue)
+local function multiplyEnergy(energy, qvalue)
     if type(energy) == "string" then
         return (util.parse_energy(energy) * qvalue).."J"
     elseif type(energy) == "number" then
@@ -140,7 +156,7 @@ end
 
 
 
-function addTooltip(original, derived, propName, normalValue, qual, qualValue)
+local function addTooltip(original, derived, propName, normalValue, qual, qualValue)
     if not tooltips[original.name] then
         tooltips[original.name] = {}
     end
@@ -162,12 +178,12 @@ function addTooltip(original, derived, propName, normalValue, qual, qualValue)
     derived.custom_tooltip_fields = original.custom_tooltip_fields
 end
 
-function addTooltipB(original, derived, propName, qual, valueFunc)
+local function addTooltipB(original, derived, propName, qual, valueFunc)
     addTooltip(original, derived, propName, valueFunc(original), qual, valueFunc(derived))
 end
 
-function formatSI(value, unit, fstr) -- currently no longer used
-    local prefixes = {"","k","M","G","T","P","E"}
+local function formatSI(value, unit, fstr) -- currently no longer used
+    local prefixes = {"","k","M","G","T","P","E", "Z", "Y", "R", "Q"}
     local index = 1
     if fstr == nil then fstr = "%.2f" end
     while value >= 1000 and index < #prefixes do
@@ -178,8 +194,8 @@ function formatSI(value, unit, fstr) -- currently no longer used
 end
 
 -- only shows the given number of significant figures (e.g. 9.5k for 9500, or 12k for 11.7k, when sig=2)
-function formatSIB(value, unit, sig, removeTrailingZeros, floor, space)
-    local prefixes = {"","k","M","G","T","P","E"}
+local function formatSIB(value, unit, sig, removeTrailingZeros, floor, space)
+    local prefixes = {"","k","M","G","T","P","E", "Z", "Y", "R", "Q"}
     local index = 1
     while value >= 1000 and index < #prefixes do
         value = value / 1000
@@ -203,17 +219,7 @@ function formatSIB(value, unit, sig, removeTrailingZeros, floor, space)
     end
 end
 
-
-function brakingChanges(entity, qvalue)
-    local bf = entity.braking_force or entity.braking_power
-    if type(bf) == "string" then
-        bf = util.parse_energy(bf)
-    end
-    entity.braking_force = bf * qvalue
-    entity.braking_power = nil
-end
-
-function getEntities(category)
+local function getEntities(category)
     -- WIP: implement blacklist
     local ret = {}
     if(changeAll) then
@@ -232,11 +238,9 @@ function getEntities(category)
     return ret
 end
 
-
--- wagon changes
---  compat: max speed of all wagons matches max quality locomotive
---  simple: as above, and capacity scales with quality
---  full: max speed, braking force and capacity scale with quality
+--------
+--- SECTION content
+--- 
 
 data:extend{
     {
@@ -256,33 +260,35 @@ data:extend{
     }
 }
 
--- parse blacklist setting
-for str in settings.startup["mqs-blacklist"].value:gmatch("([^,]+)") do
-    cloneBlacklist[str] = true
-end
 
--- full: only braking changes need prototype replacement in 2.1, so should probably make a setting for that specifically
+-- wagon changes (old)
+--  compat: max speed of all wagons matches max quality locomotive
+--  simple: as above, and capacity scales with quality
+--  full: max speed, braking force and capacity scale with quality
+
+-- new
+--  simple: 
+--  full: braking force scaling + enabling engine scaling for modded wagons
+
+
+-- full: only braking changes need prototype replacement in 2.1, so should probably make a setting for that specifically (-> "hybrid")
 -- compat/simple: allow selection between "all max speed" (quality would only help capacity, and maybe breaking) and "quality_effects_max_speed"
 -- important: if speed is actually averaged between wagons and locomotive, all_max_speed would actually cause strange behavior for non-max-quality locomotives
+--  -> "simple" scaling (enabling/fixing all the quality scaling) is sufficient; 
 -- maybe add weight scaling?
 if wagonChanges == "full" then
     local new = {}
     for qname, qvalue in pairs(qualities) do
         for name, original in pairs(getEntities("cargo-wagon")) do
             original.quality_affects_inventory_size = true -- show the quality UI for the item
+            original.quality_affects_max_speed = true
+
             local wagon = table.deepcopy(original)
             defaultChanges(wagon, qname)
-            
-            --wagon.inventory_size = wagon.inventory_size * qvalue
-            wagon.quality_affects_inventory_size = true
             if wagon.max_speed then
-                wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude) -- quality level differences are equivalent to RF quality differences - 4.5% per level. 
-                -- what's the correct unit for the speed?? apparently meter per tick
-                addTooltipB(original, wagon, "description.max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6))} end)
+                wagon.max_speed = nil -- actually, remove wagon speed preference for now
             end
-            --wagon.braking_force = (wagon.braking_force or wagon.braking_power) * qvalue
-            --wagon.braking_power = nil -- prevent duplicate entries if mods use _power over _force
-            brakingChanges(wagon, qvalue)
+            wagon.braking_force = wagon.braking_force * qvalue
     
             table.insert(new, wagon)
         end
@@ -290,17 +296,14 @@ if wagonChanges == "full" then
     for qname, qvalue in pairs(qualities) do
         for name, original in pairs(getEntities("fluid-wagon")) do
             original.quality_affects_capacity = true
+            original.quality_affects_max_speed = true
+
             local wagon = table.deepcopy(original)
             defaultChanges(wagon, qname)
-    
-            --wagon.capacity = wagon.capacity * qvalue
-            wagon.quality_affects_capacity = true
             if wagon.max_speed then
-                wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude)
-                addTooltipB(original, wagon, "description.max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6))} end)
+                wagon.max_speed = nil
             end
-            brakingChanges(wagon, qvalue)
-            
+            wagon.braking_force = wagon.braking_force * qvalue
     
             table.insert(new, wagon)
         end
@@ -308,83 +311,61 @@ if wagonChanges == "full" then
     for qname, qvalue in pairs(qualities) do
         for name, original in pairs(getEntities("artillery-wagon")) do
             original.quality_affects_inventory_size = true
+            original.quality_affects_max_speed = true
+
             local wagon = table.deepcopy(original)
             defaultChanges(wagon, qname)
-            
             if wagon.max_speed then
-                wagon.max_speed = wagon.max_speed * (1 + (qvalue-1) * speed_magnitude)
-                addTooltipB(original, wagon, "description.max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6))} end)
+                wagon.max_speed = nil
             end
-            brakingChanges(wagon, qvalue)
-            
+            wagon.braking_force = wagon.braking_force * qvalue
     
             table.insert(new, wagon)
         end
     end
     if next(new) then data:extend(new) end
-else
+elseif wagonChanges == "simple" then
     local maxQ = 0
     for qname, qvalue in pairs(qualities) do
         if qvalue > maxQ then maxQ = qvalue end
     end
-    local speedFactor = (1 + (maxQ-1) * speed_magnitude)
-    if not settings.startup["mqs-locomotive-changes"].value then speedFactor = 1 end -- if locomotives are not changed, there is no reason to modify maximum speeds
 
     for name, original in pairs(getEntities("cargo-wagon")) do
-        if wagonChanges == "simple" then
-            original.quality_affects_inventory_size = true
-        end
+        original.quality_affects_inventory_size = true
         if original.max_speed then
-            original.max_speed = original.max_speed * speedFactor
+            --original.max_speed = original.max_speed * speedFactor
+            -- removing the speed limit from wagons seems more sensible than scaling it up (even with quality_affects_max_speed), since it's now more of a "speed preference" than a speed limit
+            original.max_speed = nil -- in 2.1, increasing wagon max_speed would actually increase train speed
         end
     end
     for name, original in pairs(getEntities("fluid-wagon")) do
-        if wagonChanges == "simple" then
-            original.quality_affects_capacity = true
-        end
+        original.quality_affects_capacity = true
         if original.max_speed then
-            original.max_speed = original.max_speed * speedFactor
+            original.max_speed = nil
         end
     end
     for name, original in pairs(getEntities("artillery-wagon")) do
         if original.max_speed then
-            original.max_speed = original.max_speed * speedFactor
+            original.max_speed = nil
         end
     end
 end
--- vanilla now
---if settings.startup["mqs-storage-tank-changes"].value then
---    local new = {}
---    for qname, qvalue in pairs(qualities) do
---        for name, original in pairs(getEntities("storage-tank")) do repeat -- necessary for "break" to work as "continue"
---            if name:match("^factory%-connection%-indicator%-") or name:match("^factory%-[1-3]$") then
---                break
---            end
---            local tank = table.deepcopy(original)
---            defaultChanges(tank, qname)
---    
---            tank.fluid_box.volume = tank.fluid_box.volume * qvalue
---
---            addTooltipB(original, tank, "description.fluid-capacity", qname, function(e) return formatSIB(e.fluid_box.volume,"",2,nil,true,"") end)
---    
---            table.insert(new, tank)
---        until true; end
---    end
---    if next(new) then data:extend(new) end
---end
 
 -- power and speed scaling are vanilla now
 -- -> configure quality values
 -- -> make entities only for breaking, efficiency
-if settings.startup["mqs-locomotive-changes"].value then
+if settings.startup["mqs-locomotive-changes"].value == "old" then
     local new = {}
     for qname, qvalue in pairs(qualities) do
+        local qp = data.raw.quality[qname]
+        --local baseAccFactor = qp.locomotive_power_multiplier or (1+0.01*qp.level) -- correct according to docs, but from earlier test it might have to be 0.2*level?
+        qp.locomotive_power_multiplier = 1 -- easier this way
         for name, original in pairs(getEntities("locomotive")) do
+            original.quality_affects_max_speed = false
             local train = table.deepcopy(original)
             defaultChanges(train, qname)
     
             train.max_speed = train.max_speed * (1 + (qvalue-1) * speed_magnitude)
-            --train.max_power = tostring(600 * qvalue) .. "kW"
             train.max_power = (util.parse_energy(train.max_power) * qvalue).."J"
             addTooltipB(original, train, "description.max-speed", qname, function(e) return {"si-unit-kilometer-per-hour", tostring(math.floor(e.max_speed*60*3.6))} end)
             addTooltipB(original, train, "description.acceleration-power", qname, function(e) return formatSIB(util.parse_energy(e.max_power)*60,"W",3,true) end)
@@ -400,10 +381,45 @@ if settings.startup["mqs-locomotive-changes"].value then
                 end
                 addTooltip(original, train, "description.effectivity", math.floor((original.energy_source.effectivity or 1)*100).."%", qname, math.floor((train.energy_source.effectivity or 1)*100).."%")
             end
-            brakingChanges(train, qvalue)
-
-            
-
+            train.braking_force = train.braking_force * qvalue
+            table.insert(new, train)
+        end
+    end
+    if next(new) then data:extend(new) end
+elseif settings.startup["mqs-locomotive-changes"].value == "tweak" then
+    for name, original in pairs(getEntities("locomotive")) do
+        original.quality_affects_max_speed = true
+    end
+    for qname, qual in pairs(data.raw["quality"]) do
+        local qvalue = qual.default_multiplier or (1 + 0.3 * qual.level)
+        qual.rolling_stock_max_speed_multiplier = (1 + (qvalue-1) * speed_magnitude)
+        qual.locomotive_power_multiplier = qvalue
+    end
+elseif settings.startup["mqs-locomotive-changes"].value == "hybrid" then
+    -- use vanilla facilities where possible, and use normal mechanism for braking/efficiency
+    local new = {}
+    for qname, qvalue in pairs(qualities) do
+        local qp = data.raw.quality[qname]
+        qp.rolling_stock_max_speed_multiplier = (1 + (qvalue-1) * speed_magnitude)
+        qp.locomotive_power_multiplier = qvalue -- 30% per level instead of 20%
+        for name, original in pairs(getEntities("locomotive")) do
+            original.quality_affects_max_speed = true
+            local train = table.deepcopy(original)
+            defaultChanges(train, qname)
+    
+            if train.energy_source.type == "burner" and fuelUse ~= "linear" then
+                if fuelUse == "constant" then
+                    train.energy_source.effectivity = (train.energy_source.effectivity or 1) * qvalue
+                elseif fuelUse == "speed" then
+                    train.energy_source.effectivity = (train.energy_source.effectivity or 1) * qvalue / (1 + (qvalue-1) * speed_magnitude)
+                elseif fuelUse == "inverse" then
+                    train.energy_source.effectivity = (train.energy_source.effectivity or 1) * qvalue * qvalue
+                elseif fuelUse == "qspeed" then
+                    train.energy_source.effectivity = (train.energy_source.effectivity or 1) * qvalue / (1 + (qvalue-1) * speed_magnitude)^2
+                end
+                addTooltip(original, train, "description.effectivity", math.floor((original.energy_source.effectivity or 1)*100).."%", qname, math.floor((train.energy_source.effectivity or 1)*100).."%")
+            end
+            train.braking_force = train.braking_force * qvalue
 
             table.insert(new, train)
         end
@@ -411,9 +427,9 @@ if settings.startup["mqs-locomotive-changes"].value then
     if next(new) then data:extend(new) end
 end
 
--- partially vanilla
 if settings.startup["mqs-rocket-changes"].value then
     -- todo: maybe add option for scaling intensity?
+    -- todo: find out which properties are scaled by rising_speed_modifier/engine_starting_speed_modifier
     local new = {}
     for qname, qvalue in pairs(qualities) do
         for name, original in pairs(getEntities("rocket-silo")) do
@@ -425,8 +441,8 @@ if settings.startup["mqs-rocket-changes"].value then
             silo.door_opening_speed = silo.door_opening_speed * qvalue -- todo: is this the "arms_speed_modifier_per_quality_level" parameter?
             silo.light_blinking_speed = silo.light_blinking_speed * qvalue
 
-            silo.rocket_rising_delay = math.ceil((silo.rocket_rising_delay or 30) / qvalue) -- todo: switch to vanilla parameter (rocket_rising_speed_modifier_per_quality_level)
-            silo.launch_wait_time = math.ceil((silo.launch_wait_time or 120) / qvalue) -- todo: switch to vanilla parameter (rocket_engine_starting_speed_modifier_per_quality_level)
+            silo.rocket_rising_delay = math.ceil((silo.rocket_rising_delay or 30) / qvalue) -- todo: switch to vanilla parameter (rocket_rising_speed_modifier_per_quality_level) if it matches?
+            silo.launch_wait_time = math.ceil((silo.launch_wait_time or 120) / qvalue) -- todo: switch to vanilla parameter (rocket_engine_starting_speed_modifier_per_quality_level) if it matches?
             addTooltip(original, silo, "description.mqs-mechanical-speed-factor", 1, qname, qvalue)
 
             local rocket = table.deepcopy(data.raw["rocket-silo-rocket"][silo.rocket_entity])
@@ -502,6 +518,7 @@ if settings.startup["mqs-mining-drill-changes"].value ~= "none" then
             defaultChanges(entity, qname)
 
             addFlag(entity,"not-in-made-in")
+            addFlag(entity,"not-in-mined-by")
 
             if settings.startup["mqs-mining-drill-changes"].value == "speed" or settings.startup["mqs-mining-drill-changes"].value == "both" then
                 entity.mining_speed = entity.mining_speed * qvalue
@@ -682,6 +699,8 @@ if settings.startup["mqs-electric-turret-changes"].value ~= "none" then
             local entity = table.deepcopy(original)
             defaultChanges(entity, qname)
 
+            addFlag(entity, "not-in-bonus-gui")
+
             if val == "speed" or val == "both" then
                 entity.attack_parameters.cooldown = entity.attack_parameters.cooldown / qvalue
                 if entity.energy_source.type == "electric" then
@@ -716,6 +735,8 @@ if settings.startup["mqs-ammo-turret-changes"].value ~= "none" then
             local entity = table.deepcopy(original)
             defaultChanges(entity, qname)
 
+            addFlag(entity, "not-in-bonus-gui")
+
             if val == "speed" or val == "both" then
                 entity.attack_parameters.cooldown = entity.attack_parameters.cooldown / qvalue
                 addTooltipB(original, entity, "description.shooting-speed", qname, function(e) return {"",string.format("%.2f",(60/e.attack_parameters.cooldown)),{"per-second-suffix"}} end)
@@ -741,6 +762,8 @@ if settings.startup["mqs-fluid-turret-changes"].value ~= "none" then
         for qname, qvalue in pairs(qualities) do
             local entity = table.deepcopy(original)
             defaultChanges(entity, qname)
+
+            addFlag(entity, "not-in-bonus-gui")
 
             if val == "speed" or val == "both" then
                 entity.attack_parameters.cooldown = entity.attack_parameters.cooldown / qvalue
@@ -852,6 +875,9 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
             -- skip makePlacable
             if(not modData[name]) then modData[name] = {} end
             table.insert(modData[name],entity.name)
+            entity.order = (entity.order or name):sub(1,199-qualLen).."-"..string.format("%0"..qualLen.."i",data.raw.quality[qname].level)
+
+            addFlag(entity, "not-in-bonus-gui")
 
             -- drop specific item
             local iname = nil
@@ -878,6 +904,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
                 item.localised_name = qualityInName and {"", "[quality="..qname.."]", {"item-name."..name}} or {"item-name."..name}
                 item.place_result = entity.name
                 item.subgroup = "mqs-qualitised-entities-sub"
+                item.order = (item.order or iname):sub(1,199-qualLen).."-"..string.format("%0"..qualLen.."i",data.raw.quality[qname].level)
                 table.insert(new, item)
             end
         end
@@ -895,6 +922,9 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
             -- skip makePlacable
             if(not modData[name]) then modData[name] = {} end
             table.insert(modData[name],entity.name)
+            entity.order = (entity.order or name):sub(1,199-qualLen).."-"..string.format("%0"..qualLen.."i",data.raw.quality[qname].level)
+
+            addFlag(entity, "not-in-bonus-gui")
 
             -- drop specific item
             local iname = nil
@@ -921,6 +951,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
                 item.localised_name = qualityInName and {"", "[quality="..qname.."]", {"item-name."..name}} or {"item-name."..name}
                 item.place_result = entity.name
                 item.subgroup = "mqs-qualitised-entities-sub"
+                item.order = (item.order or iname):sub(1,199-qualLen).."-"..string.format("%0"..qualLen.."i",data.raw.quality[qname].level)
                 table.insert(new, item)
             end
         end

@@ -1,4 +1,21 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.7.0
+Date: 2026-06-30
+  Features:
+    - Factorio 2.1 compatibility
+  Changes:
+    - Storage tank capacity scaling is available in vanilla now
+    - Locomotive scaling was integrated with vanilla - "tweak" only changes the vanilla quality multipliers, "hybrid" still uses my custom quality system to also affect efficiency and braking power.
+    - Default speed scaling changed from "significant" (7%) to "balanced" (4.5%); the new vanilla default without this mod is 3% per level. Acceleration scaling stays at 30% per level if "tweak" or "hybrid" are active - if there is interest, I could add a setting to reduce it to 20% (the new vanilla default).
+    - Prototypes should now be ordered according to quality level, instead of lexically (if not hidden).
+  Bugfixes:
+    - Mining drill variants no longer show up in ore tooltips
+    - Turret and robot variants no longer show up in bonus tooltips
+  Info:
+    - Setting locomotive scaling to "tweak" or "none" will remove quality trains when loading existing 2.0 save files! I'm planning to add a safe migration path between different settings in the future.
+    - The same applies for changing wagon scaling from "full" (2.0 default) to "simple" or "none"
+    - Rocket silo launch speed scaling from vanilla and this mod currently stack
+---------------------------------------------------------------------------------------------------
 Version: 1.6.2
 Date: 2026-06-24
   Bugfixes:
