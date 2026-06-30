@@ -143,7 +143,14 @@ data:extend({
 		name = "mqs-underground-changes",
 		setting_type = "startup",
 		default_value = false,
-		order = "w"
+		order = "wa"
+	},
+	{
+		type = "bool-setting",
+		name = "mqs-pipe-weaving",
+		setting_type = "startup",
+		default_value = false,
+		order = "wb"
 	},
 	{
 		type = "bool-setting",
