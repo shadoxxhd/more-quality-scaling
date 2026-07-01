@@ -848,7 +848,9 @@ if settings.startup["mqs-underground-changes"].value or settings.startup["mqs-pi
                     changed = true
                 end
                 if settings.startup["mqs-pipe-weaving"].value and j.connection_type == "underground" then
-                    if type(j.connection_category) == "string" then
+                    if not j.connection_category then
+                        j.connection_category = qname
+                    elseif type(j.connection_category) == "string" then
                         j.connection_category = qname.."-"..j.connection_category
                     else
                         for k,_ in pairs(j.connection_category or {}) do
@@ -861,7 +863,7 @@ if settings.startup["mqs-underground-changes"].value or settings.startup["mqs-pi
 
             if changed then
                 defaultChanges(entity, qname)
-                addTooltip(original, entity, "description.maximum-length", tostring(oldMax), qname, tostring(math.min(oldMax + data.raw.quality[qname].level,255)))
+                addTooltip(original, entity, "description.maximum-length", tostring(oldMax), qname, tostring(math.min(math.floor(j.max_underground_distance * qvalue),255)))
                 table.insert(new, entity)
             end
         end
@@ -915,6 +917,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
                 item.localised_name = qualityInName and {"", "[quality="..qname.."]", {"item-name."..name}} or {"item-name."..name}
                 item.place_result = entity.name
                 item.subgroup = "mqs-qualitised-entities-sub"
+                item.hidden_in_factoriopedia = true
                 item.order = (item.order or iname):sub(1,199-qualLen).."-"..string.format("%0"..qualLen.."i",data.raw.quality[qname].level)
                 table.insert(new, item)
             end
@@ -962,6 +965,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
                 item.localised_name = qualityInName and {"", "[quality="..qname.."]", {"item-name."..name}} or {"item-name."..name}
                 item.place_result = entity.name
                 item.subgroup = "mqs-qualitised-entities-sub"
+                item.hidden_in_factoriopedia = true
                 item.order = (item.order or iname):sub(1,199-qualLen).."-"..string.format("%0"..qualLen.."i",data.raw.quality[qname].level)
                 table.insert(new, item)
             end
