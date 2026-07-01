@@ -915,7 +915,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
             if iname then
                 local item = table.deepcopy(data.raw.item[iname])
                 item.name = qname.."-"..name
-                item.localised_name = qualityInName and {"", "[quality="..qname.."]", {"item-name."..name}} or {"item-name."..name}
+                --item.localised_name = qualityInName and {"", "[quality="..qname.."]", {"item-name."..name}} or {"item-name."..name}
                 item.place_result = entity.name
                 item.subgroup = "mqs-qualitised-entities-sub"
                 item.hidden_in_factoriopedia = true
@@ -963,7 +963,7 @@ if settings.startup["mqs-robot-changes"].value ~= "none" then
             if iname then
                 local item = table.deepcopy(data.raw.item[iname])
                 item.name = qname.."-"..name
-                item.localised_name = qualityInName and {"", "[quality="..qname.."]", {"item-name."..name}} or {"item-name."..name}
+                --item.localised_name = qualityInName and {"", "[quality="..qname.."]", {"item-name."..name}} or {"item-name."..name}
                 item.place_result = entity.name
                 item.subgroup = "mqs-qualitised-entities-sub"
                 item.hidden_in_factoriopedia = true
