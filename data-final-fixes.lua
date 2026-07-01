@@ -797,7 +797,7 @@ if settings.startup["mqs-belt-changes"].value then
                     entity.related_underground_belt = qname.."-"..entity.related_underground_belt
                 end
 
-                addTooltipB(original, entity, "description.belt-speed", qname, function(e) return {"",tostring(e.speed),{"belt-items"},{"per-second-suffix"}} end)
+                addTooltipB(original, entity, "description.belt-speed", qname, function(e) return {"",tostring(e.speed*480)," ",{"description.belt-items"},{"per-second-suffix"}} end)
     
                 table.insert(new, entity)
             end
@@ -816,7 +816,7 @@ if settings.startup["mqs-belt-changes"].value or settings.startup["mqs-undergrou
 
             if settings.startup["mqs-belt-changes"].value then
                 ubelt.speed = ubelt.speed * qvalue
-                addTooltipB(original, ubelt, "description.belt-speed", qname, function(e) return {"",tostring(e.speed),"belt-items","per-second-suffix"} end)
+                addTooltipB(original, ubelt, "description.belt-speed", qname, function(e) return {"",tostring(e.speed*480)," ",{"description.belt-items"},{"per-second-suffix"}} end)
             end
             if settings.startup["mqs-underground-changes"].value then
                 ubelt.max_distance = math.min(math.floor(ubelt.max_distance * qvalue),255)
@@ -863,7 +863,7 @@ if settings.startup["mqs-underground-changes"].value or settings.startup["mqs-pi
 
             if changed then
                 defaultChanges(entity, qname)
-                addTooltip(original, entity, "description.maximum-length", tostring(oldMax), qname, tostring(math.min(math.floor(j.max_underground_distance * qvalue),255)))
+                addTooltip(original, entity, "description.maximum-length", tostring(oldMax), qname, tostring(math.min(math.floor(oldMax * qvalue),255)))
                 table.insert(new, entity)
             end
         end
