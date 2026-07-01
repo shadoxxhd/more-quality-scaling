@@ -11,6 +11,7 @@ Date: 2026-06-30
   Bugfixes:
     - Mining drill variants no longer show up in ore tooltips
     - Turret and robot variants no longer show up in bonus tooltips
+    - Tooltip locale improvements
   Info:
     - Setting locomotive scaling to "tweak" or "none" will remove quality trains when loading existing 2.0 save files! I'm planning to add a safe migration path between different settings in the future.
     - The same applies for changing wagon scaling from "full" (2.0 default) to "simple" or "none"
